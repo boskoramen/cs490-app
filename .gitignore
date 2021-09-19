@@ -1,0 +1,9 @@
+# React project directory
+react/dist
+react/node_modules
+
+# Emacs backup files
+*~
+
+# VS Code
+*.code-workspace
