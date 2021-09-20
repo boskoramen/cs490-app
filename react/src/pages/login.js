@@ -3,7 +3,7 @@ import { Page } from "../components/page.js";
 import { Input } from "../components/input.js";
 import { Flex } from "../components/flex.js";
 import { Button } from "../components/button.js";
-const https = require("https-browserify");
+const https = require("https");
 
 export const LoginPage = (props) => {
     return (
@@ -28,12 +28,7 @@ export const LoginPage = (props) => {
 						})
 					});
 
-					const JSONMessage = {
-						name: 'Isaiah',
-						pass: 'password',
-					};
-
-					req.write("d");
+					req.write("{\"name\": \"Isaiah\", \"pass\": \"password\"}");
 					req.end();
 				}}>
 					Log In

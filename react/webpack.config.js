@@ -1,6 +1,7 @@
 // Generated using webpack-cli https://github.com/webpack/webpack-cli
 
 const path = require("path");
+const webpack = require("webpack");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 const isProduction = process.env.NODE_ENV == "production";
@@ -21,6 +22,12 @@ const config = {
 
 		// Add your plugins here
 		// Learn more about plugins from https://webpack.js.org/configuration/plugins/
+		
+		// fix "process is not defined" error:
+		// (do "npm install process" before running the build)
+		new webpack.ProvidePlugin({
+			process: 'process/browser',
+		}),
 	],
 	module: {
 		rules: [{
@@ -52,7 +59,9 @@ const config = {
 	},
 	resolve: {
 		fallback: {
-			https: false,
+			https: require.resolve("https-browserify"),
+			http: require.resolve("stream-http"),
+			buffer: require.resolve("buffer/"),
 		},
 	}
 };
