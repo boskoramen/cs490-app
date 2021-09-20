@@ -1,10 +1,19 @@
 import React from "react";
+import { parseProps } from "../util/helpers.js"
 
-// TODO: Add a way to resolve className when objects are passed
+const validProps = [
+    "backgroundColor",
+    "height",
+    "width",
+]
 export const Box = (props) => {
     return (
         <div 
             {...props}
+            style={{
+                ...props.style,
+                ...parseProps(props, validProps),
+            }}
         />
     );
 }

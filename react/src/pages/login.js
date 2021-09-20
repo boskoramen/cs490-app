@@ -6,7 +6,7 @@ import { Flex } from "../components/flex.js";
 export const LoginPage = (props) => {
     return (
 		<Page {...props}>
-			<Flex flexDirection="column">
+			<Flex>
 				<div>Dog</div>
 				<div>Cat</div>
 			</Flex>
