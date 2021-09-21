@@ -27,6 +27,8 @@ const config = {
 		// (do "npm install process" before running the build)
 		new webpack.ProvidePlugin({
 			process: 'process/browser',
+			Buffer: ['buffer', 'Buffer'],
+			buffer: ['buffer', 'Buffer'],
 		}),
 	],
 	module: {
@@ -61,7 +63,6 @@ const config = {
 		fallback: {
 			https: require.resolve("https-browserify"),
 			http: require.resolve("stream-http"),
-			buffer: require.resolve("buffer/"),
 		},
 	}
 };
