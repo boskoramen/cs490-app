@@ -7,3 +7,6 @@ react/node_modules
 
 # VS Code
 *.code-workspace
+
+# Dev server
+/dev/
