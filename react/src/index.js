@@ -1,14 +1,20 @@
-import React from "react";
+import React, { useReducer } from "react";
 import ReactDOM from "react-dom";
-import { LoginPage } from "./pages/login.js";
+import reducer from "./reducer/reducer";
+import { initialState } from "./reducer/constants";
+import MasterContext from "./reducer/context";
 
-function Master() {
-    return <LoginPage />;
+const Master = () => {
+    const [ state, dispatch ] = useReducer(reducer, initialState);
+    const CurrentPage = state.current_page;
+    return (
+        <MasterContext.Provider value={dispatch}>
+            <CurrentPage />
+        </MasterContext.Provider>
+    );
 }
-
-const base = <Master/>;
 
 // This is the HTML element in which we want React to render
 const reactDomContainer = document.getElementById("root");
 
-ReactDOM.render(base, reactDomContainer);
+ReactDOM.render(<Master />, reactDomContainer);
