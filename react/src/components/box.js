@@ -1,5 +1,6 @@
-import React from "react";
-import { parseProps } from "../util/helpers"
+import React from 'react';
+import { parseProps } from '../util/helpers'
+import { pickHTMLProps } from 'react-sanitize-dom-props';
 
 const validProps = [
     "backgroundColor",
@@ -16,7 +17,7 @@ const validProps = [
 export const Box = (props) => {
     return (
         <div 
-            {...props}
+            {...pickHTMLProps(props)}
             style={{
                 ...props.style,
                 ...parseProps(props, validProps),

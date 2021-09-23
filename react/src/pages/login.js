@@ -50,7 +50,10 @@ export const LoginPage = (props) => {
 							timeout: 1000,
 							httpsAgent: new https.Agent({ keepAlive: true }),
 						}).then((res) => {
-							if(res.status != 200) {
+							if(res.status > 400) {
+								setErrorMessage("Unable to communicate with server!");
+								console.log(`Error: Bad response: ${res.status} ${res.statusText}`);
+							} else if(res.status != 200) {
 								return;
 							}
 							
@@ -63,6 +66,12 @@ export const LoginPage = (props) => {
 									break;
 								default:
 									setErrorMessage("Invalid username and password credentials passed!");
+							}
+						})
+						.catch((error) => {
+							if(error.request) {
+								setErrorMessage("Unable to communicate with server!");
+								console.log(`Error: ${error.message}\n${error.stack}`);
 							}
 						});
 					}}
