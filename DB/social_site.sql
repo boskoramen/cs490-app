@@ -1,3 +1,5 @@
+-- Abel Bijumathew
+
 -- phpMyAdmin SQL Dump
 -- version 4.9.7
 -- https://www.phpmyadmin.net/
@@ -23,6 +25,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `login` (
   `ID` int(11) NOT NULL,
   `username` varchar(50) NOT NULL,
+  `salt` varchar(50) NOT NULL, 
   `passcode` text NOT NULL,
   `usertype` enum('admin','user') NOT NULL,
   `status` enum('active','deleted') NOT NULL
@@ -32,10 +35,10 @@ CREATE TABLE `login` (
 -- Dumping data for table `login`
 --
 
-INSERT INTO `login` (`ID`, `username`, `passcode`, `usertype`, `status`) VALUES
-(1, 'admin@gmail.com', 'admin', 'admin', 'active'),
-(2, 'abel@gmail.com', 'abel1234', 'user', 'active'),
-(3, 'test@gmail.com', 'test1234', 'user', 'active');
+INSERT INTO `login` (`ID`, `username`, `passcode`, `salt`,`usertype`, `status`) VALUES
+(1, 'admin@gmail.com', 'ba454cc5b61e28ffecf1968f8cf20add08e86a92ebaeeb4cda99ffb4f701aebf2ba244d6c78f79f6cb289a09baa1ae355f14', 'bYNsXwMBasW71A2utz2G','admin', 'active'),
+(2, 'abel@gmail.com', 'b61d4570af1561c9cc3e20d7702782422dad1e4b31834c87995136703bb9c0f7406914b48bd1be16788e945c1eb7c5571817', 'x7EDUAKAUVPzzdkZXUil', 'user', 'active'),
+(3, 'test@gmail.com', '61459e9b7cf93a7c621985f1f4d16c523dd64d590d69f55046de97b8ad32fc7c3f1c928b306293b775c7c56fe6ad9fc43eae', 'dA3A0j9rPFeagKPHkXkA', 'user', 'active');
 
 -- --------------------------------------------------------
 
