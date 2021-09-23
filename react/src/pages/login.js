@@ -33,7 +33,7 @@ export const LoginPage = (props) => {
 				<div>Username</div>
 				<Input defaultValue="Enter username" onChange={setUsername} />
 				<div>Password</div>
-				<Input defaultValue="Enter password" onChange={setPassword} />
+				<Input isPassword={true} defaultValue="Enter password" onChange={setPassword} />
 				<Button 
 					onClick={() => {
 						const postData = {
@@ -42,7 +42,7 @@ export const LoginPage = (props) => {
 						};
 						const addr = '52.7.114.65';
 						const port = 9000;
-						const url = `${addr}:${port}`;
+						const url = `http://${addr}:${port}`;
 						axios.post(url, postData, {
 							headers: {
 								'Content-Type': 'application/json',

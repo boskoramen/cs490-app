@@ -4,21 +4,25 @@ import { Box } from "./box.js";
 export const Input = (props) => {
     const [value, setValue] = useState(props.defaultValue);
     const [receivedInput, setReceivedInput] = useState(false);
+    const [type, setType] = useState(props.type ? props.type : "text");
     return (
         <Box>
             <input
-                type={props.type ? props.type : "text"}
+                type={type}
                 value={value}
                 onChange={(e) => {
                     const target = e.target.value;
                     setValue(target);
                     if(target) {
+                        if(props.isPassword) {
+                            setType("password");
+                        }
                         setReceivedInput(true);
                     }
                     
                     const onChange = props.onChange;
                     if(onChange) {
-                        onChange();
+                        onChange(target);
                     }
                 }}
                 onFocus={(e) => {
@@ -28,6 +32,9 @@ export const Input = (props) => {
                 }}
                 onBlur={(e) => {
                     if(!value) {
+                        if(props.isPassword) {
+                            setType("text");
+                        }
                         setReceivedInput(false);
                         setValue(props.defaultValue);
                     }
