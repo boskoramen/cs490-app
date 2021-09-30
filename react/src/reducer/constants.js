@@ -1,6 +1,6 @@
-import { LoginPage } from '../pages/login';
-import { UserPage } from '../pages/user';
-import { AdminPage } from '../pages/admin';
+import { LoginPage } from '../pages/LoginPage';
+import { UserPage } from '../pages/UserPage';
+import { AdminPage } from '../pages/AdminPage';
 
 export const actions = {
     change_page: 'change_page',

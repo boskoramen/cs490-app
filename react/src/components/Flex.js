@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "./box.js";
+import { Box } from "./Box.js";
 import { parseProps } from "../util/helpers.js"
 import styles from "../styles/main.scss";
 

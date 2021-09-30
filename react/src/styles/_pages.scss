@@ -1,0 +1,23 @@
+.codingPracticeHeader {
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+$practiceTitleMargin: 10px;
+
+.codingPracticeTitle {
+    font-size: 20px;
+    font-weight: bold;
+    width: min-content;
+    padding-top: $practiceTitleMargin;
+    padding-bottom: $practiceTitleMargin;
+    padding-left: 10px;
+    padding-right: 10px;
+
+    border-style: solid;
+    border-width: 2px 0px;
+}
+
+.codingPracticeContents {
+    padding-left: 5px;
+}

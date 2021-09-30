@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box } from "./box.js";
+import { Box } from "./Box.js";
 
 export const Input = (props) => {
     const [value, setValue] = useState(props.defaultValue);
