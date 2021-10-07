@@ -4,7 +4,7 @@ import reducer from "./reducer/reducer";
 import { initialState } from "./reducer/constants";
 import MasterContext from "./reducer/context";
 import cookie from "react-cookies";
-import serverURL from "./util/ServerInfo";
+import serverURL from "./util/serverinfo";
 import axios from "axios";
 
 const Master = () => {

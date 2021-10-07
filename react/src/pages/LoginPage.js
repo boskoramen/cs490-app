@@ -8,7 +8,7 @@ import https from "https";
 import MasterContext from "../reducer/context";
 import { actions, pages } from "../reducer/constants.js";
 import CodingPracticePage from "./CodingPracticePage";
-import serverURL from "../util/ServerInfo";
+import serverURL from "../util/serverinfo";
 import setCookie from "set-cookie-parser";
 import cookie from "react-cookies";
 
