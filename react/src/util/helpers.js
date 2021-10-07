@@ -13,3 +13,7 @@ export const parseProps = (props, validProps) => {
     }
     return style;
 }
+
+export const objIsEmpty = (obj) => {
+    return obj && Object.keys(obj).length === 0;
+}

@@ -8,6 +8,9 @@ import https from "https";
 import MasterContext from "../reducer/context";
 import { actions, pages } from "../reducer/constants.js";
 import CodingPracticePage from "./CodingPracticePage";
+import serverURL from "../util/ServerInfo";
+import setCookie from "set-cookie-parser";
+import cookie from "react-cookies";
 
 export const LoginPage = (props) => {
 	const dispatch = useContext(MasterContext);
@@ -39,10 +42,7 @@ export const LoginPage = (props) => {
 							'name': username,
 							'pass': password,
 						};
-						const addr = '52.7.114.65';
-						const port = 9000;
-						const url = `http://${addr}:${port}`;
-						axios.post(url, postData, {
+						axios.post(serverURL, postData, {
 							headers: {
 								'Content-Type': 'application/json',
 							},
@@ -54,6 +54,12 @@ export const LoginPage = (props) => {
 								console.log(`Error: Bad response: ${res.status} ${res.statusText}`);
 							} else if(res.status != 200) {
 								return;
+							}
+
+							// Save cookies from response
+							const cookies = setCookie.parse(res);
+							for(const _cookie in cookies) {
+								cookie.save(_cookie.name, _cookie.value);
 							}
 							
 							switch(res.data) {
