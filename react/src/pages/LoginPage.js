@@ -78,6 +78,18 @@ export const LoginPage = (props) => {
 				>
 					Log In
 				</Button>
+				<a 
+					href="" 
+					onClick={(e) => {
+						e.preventDefault();
+						dispatch({type: actions.change_page, value: pages.registration});
+					}}
+					style={{
+						display: "inline-block",
+					}}
+				>
+					Create Account
+				</a>
 			</Flex>
 		</CodingPracticePage>
 	);
