@@ -6,6 +6,7 @@ import MasterContext from "./reducer/context";
 import cookie from "react-cookies";
 import serverURL from "./util/serverinfo";
 import axios from "axios";
+import https from "https";
 
 const Master = () => {
     const [ state, dispatch ] = useReducer(reducer, initialState);

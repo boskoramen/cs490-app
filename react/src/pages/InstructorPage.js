@@ -1,8 +1,8 @@
 import React from "react";
 import CodingPracticePage from "./CodingPracticePage.js";
 
-export const AdminPage = (props) => {
+export const InstructorPage = (props) => {
     return (
-        <CodingPracticePage pageTitle="Admin Page"/>
+        <CodingPracticePage pageTitle="Instructor Page"/>
     );
 }

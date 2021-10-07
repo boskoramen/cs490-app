@@ -12,6 +12,9 @@ import serverURL from "../util/serverinfo";
 import setCookie from "set-cookie-parser";
 import cookie from "react-cookies";
 
+// TODO: Convert buttons to links (or anchors) and then style them
+// TODO: Use react-router to simulate navigation
+
 export const LoginPage = (props) => {
 	const dispatch = useContext(MasterContext);
 	const [ username, setUsername ] = useState("");
@@ -67,7 +70,7 @@ export const LoginPage = (props) => {
 									dispatch({type: actions.change_page, value: pages.user})
 									break;
 								case 'admin':
-									dispatch({type: actions.change_page, value: pages.admin})
+									dispatch({type: actions.change_page, value: pages.instructor})
 									break;
 								default:
 									setErrorMessage("Invalid username and password credentials passed!");
