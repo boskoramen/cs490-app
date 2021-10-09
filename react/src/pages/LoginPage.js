@@ -9,7 +9,6 @@ import MasterContext from "../reducer/context";
 import { actions, pages } from "../reducer/constants.js";
 import CodingPracticePage from "./CodingPracticePage";
 import serverURL from "../util/serverinfo";
-import setCookie from "set-cookie-parser";
 import cookie from "react-cookies";
 
 // TODO: Convert buttons to links (or anchors) and then style them
@@ -50,6 +49,7 @@ export const LoginPage = (props) => {
 								'Content-Type': 'application/json',
 							},
 							timeout: 1000,
+							withCredentials: true,
 							httpsAgent: new https.Agent({ keepAlive: true }),
 						}).then((res) => {
 							if(res.status > 400) {
@@ -58,18 +58,18 @@ export const LoginPage = (props) => {
 							} else if(res.status != 200) {
 								return;
 							}
-
-							// Save cookies from response
-							const cookies = setCookie.parse(res);
-							for(const _cookie in cookies) {
-								cookie.save(_cookie.name, _cookie.value);
+							const [ result, sesID ] = res.data.split(";");
+							if(sesID) {
+								cookie.save('sesID', sesID);
+								console.log(`cookie: ${sesID}`);
 							}
-							
-							switch(res.data) {
+							switch(result) {
 								case 'user':
+									dispatch({type: actions.set_logged_in, value: true});
 									dispatch({type: actions.change_page, value: pages.user})
 									break;
 								case 'admin':
+									dispatch({type: actions.set_logged_in, value: true});	
 									dispatch({type: actions.change_page, value: pages.instructor})
 									break;
 								default:

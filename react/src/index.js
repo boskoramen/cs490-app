@@ -7,27 +7,37 @@ import cookie from "react-cookies";
 import serverURL from "./util/serverinfo";
 import axios from "axios";
 import https from "https";
+import { actions, pages } from "./reducer/constants";
 
 const Master = () => {
     const [ state, dispatch ] = useReducer(reducer, initialState);
-    const sessionID = cookie.load('sessionID');
-    const postData = {
-        'sessionID': sessionID,
-    };
-    axios.post(serverURL, postData, {
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        timeout: 1000,
-        httpsAgent: new https.Agent({ keepAlive: true }),
-    }).then((res) => {
-        switch(res.data) {
-            // TODO: Add handling for user obj here
-            default:
-                // Handle dispatch to handle login here?
-                ;
-        }
-    })
+    const sesID = cookie.load('sesID');
+    if(sesID && !state.isLoggedIn) {
+        const postData = {
+            'sesID': sesID,
+        };
+        axios.post(serverURL, postData, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            timeout: 1000,
+            httpsAgent: new https.Agent({ keepAlive: true }),
+        }).then((res) => {
+            switch(res.data) {
+                case 'user':
+                    dispatch({type: actions.set_logged_in, value: true});
+                    dispatch({type: actions.change_page, value: pages.user});
+                    break;
+                case 'admin':
+                    dispatch({type: actions.set_logged_in, value: true});	
+                    dispatch({type: actions.change_page, value: pages.instructor});
+                    break;
+                default:
+                    // Session no longer valid, delete cookie
+                    cookie.remove('sesID');
+            }
+        });
+    }
     const CurrentPage = state.current_page;
 
     // TODO: add user information obj as part of state

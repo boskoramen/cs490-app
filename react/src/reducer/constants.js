@@ -5,6 +5,7 @@ import { RegistrationPage } from '../pages/RegistrationPage';
 
 export const actions = {
     change_page: 'change_page',
+    set_logged_in: 'set_logged_in',
 };
 
 export const pages = {
@@ -16,4 +17,5 @@ export const pages = {
 
 export const initialState = {
     current_page: pages.login,
+    isLoggedIn: false,
 };
