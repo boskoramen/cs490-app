@@ -3,13 +3,19 @@ const express = require("express");
 var cors = require('cors');
 var mysql = require('mysql');
 var crypto = require('crypto');
+const max = 10000;
+var sessions = {};
+
+//connection for SQL server
 var connection = mysql.createConnection({
 host     : '127.0.0.1',
 user     : 'root',
 password : 'vvrFWUsgnuG4',
-database : 'social_site'
+database : 'CS490_ExamDB'
 });
 
+
+//Used to make salts "a_salt = makeid(20);"
 function makeid(length) {
     var result           = '';
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -19,6 +25,7 @@ function makeid(length) {
 	}
 	return result;
 }
+
 //const https = require('https');
 //const http = require('http');
 //const fs = require('fs');
@@ -33,113 +40,104 @@ const options = {
 };
 */
 
+//express and settings for various parts of express
 var app = express();
-
-//app.use(bodyParser.text({ type: 'text/plain' }))
-
 app.use(bodyParser.json({ type: 'application/json' }))
-
 app.use(cors({
-	allowedHeaders: 'Content-Type'
+	allowedHeaders: 'Content-Type',
+	origin: 'http://localhost:8080',
+	credentials: true,
+	exposedHeaders: 'Set-Cookie'
 }));
 
+//main body of code, what to do when recieving packets
 app.use('/', function (req, res) {
 	console.log(req.body);
-	console.log("My name is what?");
-	//data = JSON.parse(req.body);
 	data = req.body;
-	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
+	res.setHeader('Access-Control-Allow-Credentials', 'true');
+	res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
 	
 	
-	
-	/*
-	connection.connect(function(err) {
-		if (err) {
-			console.error('error connecting: ' + err.stack);
-			return;
-		}
-		console.log('connected as id ' + connection.threadId);
-	});
-	*/
-	
-	a_salt = makeid(20);
-	a_pass = crypto.pbkdf2Sync(data.pass, a_salt, 9000, 50, 'sha1');
-	console.log("password is: " + a_pass.toString('hex'));
-	console.log("salt is: " + a_salt);
-	connection.query("SELECT * FROM login WHERE username = '" + data.name + "'", function (error, results, fields) {
-	if (error) throw error;
-		//console.log('The solution is: ', results[0].passcode);
-		if (results.length > 0)
+	// Check if they have a session ID and if valid sign them in
+	if (data.sesID != null)
+	{
+		console.log("COOKIECAT! It's a treat for your tummy!");
+		//console.log(data.cookies);
+		if (sessions[data.sesID] != null && sessions[data.sesID].ip == req.ip)
 		{
-			if (crypto.pbkdf2Sync(data.pass, results[0].salt, 9000, 50, 'sha1').toString('hex') == results[0].passcode)
-			{
-				res.end(results[0].usertype);
-			} else
-			{
-				res.end("bad attempt");
-			}
+			console.log("COOKIECAT! It's super duper yummy!");
+			res.end(sessions[data.sesID].usertype);
 		} else
 		{
-			res.end("bad attempt");
+			console.log("HE LEFT HIS FAMILY BEHIND!");
+			res.end('bad attempt');
 		}
-	});
+	} else if (data.name != null)
+	{//if no sesID attempt to login
+		console.log("My name is what?");
 
-	//connection.end();
-	
-	/*
-	<?php require_once 'db_connect.php'; 
-	session_start();
-	if($_POST) {
-
-		$username = $_POST['username'];
-		$password = $_POST['password'];
-		$sql = "SELECT * FROM login WHERE username = '$username'";
-		$result = $connect->query($sql);
-		$login_data = $result->fetch_assoc();
-
-		if($result->num_rows > 0) {
-			//session_register("username");
-			if(password_verify($password, $login_data['passcode'])) {
-				$_SESSION['userlogin'] = $username;
-				$_SESSION['usertype'] = $login_data['usertype'];
-				require_once 'session.php';
-			} else {
-				$error = "Your Login Name or Password is invalid";
-		  }
-		}
-	}
-	?>
-*/
-	
-	/*
-	//TODO DB LOGIC
-	if (data.name == "Isaiah")
-	{
-		console.log("My name is who?");
-		if (data.pass == "password")
+		//depracated password generator
+		/*
+		a_salt = makeid(20);
+		a_pass = crypto.pbkdf2Sync(data.pass, a_salt, 9000, 50, 'sha1');
+		console.log("password is: " + a_pass.toString('hex'));
+		console.log("salt is: " + a_salt);
+		*/
+		
+		//if no sesID attempt to login
+		//TODO fix after DB shema change?-----------------------------------------------------------------------------
+		//------------------------------------------------------------------------------------------------------------
+		//------------------------------------------------------------------------------------------------------------
+		//------------------------------------------------------------------------------------------------------------
+		connection.query("SELECT * FROM login l, student s, insttructor i WHERE l.username = '" + data.name + "' AND "
+		"l.id = i.user_id OR l.id = s.user_id", function (error, results, fields)
 		{
-			console.log("My name is Chika-Chika\nSLIM SHADY");
-			res.end("admin");
-		}
+			if (error) throw error;
+			{
+				if (results.length > 0) //if they exist in DB
+				{
+					console.log("My name is who");
+					if (crypto.pbkdf2Sync(data.pass, results[0].salt, 9000, 50, 'sha1').toString('hex') == results[0].passcode)
+					{//if the password matches the salted hash
+						console.log("My name is CHIKA CHIKA");
+						//create a session ID locally appended to the end of all previous session ID's
+						randy = Math.floor(Math.random() * max);
+						this_id = result
+						//TODO eventually delete old session ID's, after a predertermined amount of time
+						sessions =
+						{
+							...sessions,
+							[randy]:
+							{
+								usertype: results[0].usertype,
+								username: results[0].username,
+								ip: req.ip
+							},
+						}
+						console.log("SLIM SHADY!");
+						console.log("Cookiecat: " + randy);//It's a treat for your tummy
+						//res.cookie("sesID", randy);//send session ID to user as cookie
+						console.log("Cookiecat: " + randy);//It's a treat for your tummy
+						res.end(results[0].usertype + ";" + randy);//send usertype to user to finalize login
+					} else
+					{
+						res.end("bad attempt");
+					}
+				} else
+				{
+					res.end("bad attempt");
+				}
+			}
+		});
+	} else
+	{//if not logging in make a question
+		connection.query('INSERT INTO question (name, function_name, function_parameters, instructor_id)'
+		"VALUES ('" + data.qname + "', '" + data.funcname + "', " + data.funcparm + "', " + data.id ")",
+		function (error, results, fields)
+		{
+		});
 	}
-	//FIX THIS, CANT HAVE 2 ENDS BUT IF ELSE BREAKS!!!!!!!!!!
-	else
-	{
-		res.end("bad attempt");
-	}
-	*/
-	console.log("name: " + data.name);
-	console.log("pass: " + data.pass);
-	/*
-	console.log(http.response(options, (req) => {
-                        req.on('data', (chunk) => {
-                            console.log(chunk.toString());
-                        })
-                    }));
-	*/
-	//res.setHeader('Access-Control-Allow-Origin', '*');
-	//res.end('you posted:\n' + data.name + " " + data.pass);
-	//res.send('hello world')
 })
 
 app.listen(9000, function() {
