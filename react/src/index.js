@@ -8,7 +8,7 @@ import serverURL from "./util/serverinfo";
 import axios from "axios";
 import https from "https";
 import { actions, pages } from "./reducer/constants";
-import { Router, Switch, Route } from "react-router";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 
 const Master = () => {
     const [ state, dispatch ] = useReducer(reducer, initialState);
@@ -43,9 +43,13 @@ const Master = () => {
 
     // TODO: add user information obj as part of state
     return (
-        <MasterContext.Provider value={dispatch}>
-            <CurrentPage />
-        </MasterContext.Provider>
+        <Router>
+            <Route exact path="/">
+                <MasterContext.Provider value={dispatch}>
+                    <CurrentPage />
+                </MasterContext.Provider>
+            </Route>
+        </Router>
     );
 }
 
