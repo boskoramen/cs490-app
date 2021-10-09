@@ -3,9 +3,10 @@ import { UserPage } from '../pages/UserPage';
 import { InstructorPage } from '../pages/InstructorPage';
 import { RegistrationPage } from '../pages/RegistrationPage';
 
+// TODO: Make changing pages and log in under the same action
 export const actions = {
-    change_page: 'change_page',
-    set_logged_in: 'set_logged_in',
+    changePage: 'changePage',
+    setLoggedIn: 'setLoggedIn',
 };
 
 export const pages = {
@@ -16,6 +17,6 @@ export const pages = {
 };
 
 export const initialState = {
-    current_page: pages.login,
+    currentPage: pages.login,
     isLoggedIn: false,
 };

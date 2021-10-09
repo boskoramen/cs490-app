@@ -61,16 +61,15 @@ export const LoginPage = (props) => {
 							const [ result, sesID ] = res.data.split(";");
 							if(sesID) {
 								cookie.save('sesID', sesID);
-								console.log(`cookie: ${sesID}`);
 							}
 							switch(result) {
 								case 'user':
-									dispatch({type: actions.set_logged_in, value: true});
-									dispatch({type: actions.change_page, value: pages.user})
+									dispatch({type: actions.setLoggedIn, value: true});
+									dispatch({type: actions.changePage, value: pages.user})
 									break;
 								case 'admin':
-									dispatch({type: actions.set_logged_in, value: true});	
-									dispatch({type: actions.change_page, value: pages.instructor})
+									dispatch({type: actions.setLoggedIn, value: true});	
+									dispatch({type: actions.changePage, value: pages.instructor})
 									break;
 								default:
 									setErrorMessage("Invalid username and password credentials passed!");

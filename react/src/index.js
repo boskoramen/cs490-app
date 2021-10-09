@@ -8,6 +8,7 @@ import serverURL from "./util/serverinfo";
 import axios from "axios";
 import https from "https";
 import { actions, pages } from "./reducer/constants";
+import { Router, Switch, Route } from "react-router";
 
 const Master = () => {
     const [ state, dispatch ] = useReducer(reducer, initialState);
@@ -25,12 +26,12 @@ const Master = () => {
         }).then((res) => {
             switch(res.data) {
                 case 'user':
-                    dispatch({type: actions.set_logged_in, value: true});
-                    dispatch({type: actions.change_page, value: pages.user});
+                    dispatch({type: actions.setLoggedIn, value: true});
+                    dispatch({type: actions.changePage, value: pages.user});
                     break;
                 case 'admin':
-                    dispatch({type: actions.set_logged_in, value: true});	
-                    dispatch({type: actions.change_page, value: pages.instructor});
+                    dispatch({type: actions.setLoggedIn, value: true});	
+                    dispatch({type: actions.changePage, value: pages.instructor});
                     break;
                 default:
                     // Session no longer valid, delete cookie
@@ -38,7 +39,7 @@ const Master = () => {
             }
         });
     }
-    const CurrentPage = state.current_page;
+    const CurrentPage = state.currentPage;
 
     // TODO: add user information obj as part of state
     return (
