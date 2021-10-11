@@ -7,8 +7,11 @@ import cookie from "react-cookies";
 import serverURL from "./util/serverinfo";
 import axios from "axios";
 import https from "https";
-import { actions, pages } from "./reducer/constants";
-import { BrowserRouter as Router } from "react-router-dom";
+import { actions } from "./reducer/constants";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import UserPage from "./pages/UserPage";
+import LoginPageHandler from "./page_handlers/LoginPageHandler";
+import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
 
 const Master = () => {
     const [ state, dispatch ] = useReducer(reducer, initialState);
@@ -27,11 +30,9 @@ const Master = () => {
             switch(res.data) {
                 case 'user':
                     dispatch({type: actions.setLoggedIn, value: true});
-                    dispatch({type: actions.changePage, value: pages.user});
                     break;
                 case 'admin':
-                    dispatch({type: actions.setLoggedIn, value: true});	
-                    dispatch({type: actions.changePage, value: pages.instructor});
+                    dispatch({type: actions.setLoggedIn, value: true});
                     break;
                 default:
                     // Session no longer valid, delete cookie
@@ -39,13 +40,22 @@ const Master = () => {
             }
         });
     }
-    const CurrentPage = state.currentPage;
 
     // TODO: add user information obj as part of state
     return (
         <Router>
-            <MasterContext.Provider value={dispatch}>
-                <CurrentPage />
+            <MasterContext.Provider value={{state, dispatch}}>
+                <Switch>
+                    <Route path="/register">
+                        <RegistrationPageHandler />
+                    </Route>
+                    <Route path="/login">
+                        <LoginPageHandler />
+                    </Route>
+                    <Route exact path="/">
+                        <UserPage />
+                    </Route>
+                </Switch>
             </MasterContext.Provider>
         </Router>
     );

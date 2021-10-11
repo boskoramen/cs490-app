@@ -6,16 +6,13 @@ import { Button } from "../components/Button";
 import axios from "axios";
 import https from "https";
 import MasterContext from "../reducer/context";
-import { actions, pages } from "../reducer/constants.js";
+import { actions } from "../reducer/constants.js";
 import CodingPracticePage from "./CodingPracticePage";
 import serverURL from "../util/serverinfo";
 import cookie from "react-cookies";
 
-// TODO: Convert buttons to links (or anchors) and then style them
-// TODO: Use react-router to simulate navigation
-
-export const LoginPage = (props) => {
-	const dispatch = useContext(MasterContext);
+const LoginPage = (props) => {
+	const { dispatch } = useContext(MasterContext);
 	const [ username, setUsername ] = useState("");
 	const [ password, setPassword ] = useState("");
 	const [ errorMessage, setErrorMessage ] = useState("");
@@ -65,11 +62,9 @@ export const LoginPage = (props) => {
 							switch(result) {
 								case 'user':
 									dispatch({type: actions.setLoggedIn, value: true});
-									dispatch({type: actions.changePage, value: pages.user})
 									break;
 								case 'admin':
-									dispatch({type: actions.setLoggedIn, value: true});	
-									dispatch({type: actions.changePage, value: pages.instructor})
+									dispatch({type: actions.setLoggedIn, value: true});
 									break;
 								default:
 									setErrorMessage("Invalid username and password credentials passed!");
@@ -90,7 +85,8 @@ export const LoginPage = (props) => {
 					href="" 
 					onClick={(e) => {
 						e.preventDefault();
-						dispatch({type: actions.change_page, value: pages.registration});
+						const history = useHistory();
+						history.push("/register");
 					}}
 					style={{
 						display: "inline-block",
@@ -102,3 +98,5 @@ export const LoginPage = (props) => {
 		</CodingPracticePage>
 	);
 }
+
+export default LoginPage;
