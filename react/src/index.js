@@ -9,7 +9,7 @@ import axios from "axios";
 import https from "https";
 import { actions } from "./reducer/constants";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
-import UserPage from "./pages/UserPage";
+import UserPageHandler from "./page_handlers/UserPageHandler";
 import LoginPageHandler from "./page_handlers/LoginPageHandler";
 import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
 
@@ -53,7 +53,7 @@ const Master = () => {
                         <LoginPageHandler />
                     </Route>
                     <Route exact path="/">
-                        <UserPage />
+                        <UserPageHandler />
                     </Route>
                 </Switch>
             </MasterContext.Provider>
