@@ -1,10 +1,10 @@
 import React from "react";
-import CodingPracticePage from "./CodingPracticePage.js";
+import UserPage from "./UserPage";
 
-const Student = (props) => {
+const StudentPage = (props) => {
     return (
-        <CodingPracticePage pageTitle="Student Page"/>
+        <UserPage pageTitle="Student Page"/>
     );
 }
 
-export default Student;
+export default StudentPage;

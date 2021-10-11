@@ -41,7 +41,6 @@ const Master = () => {
         });
     }
 
-    // TODO: add user information obj as part of state
     return (
         <Router>
             <MasterContext.Provider value={{state, dispatch}}>

@@ -61,10 +61,10 @@ const LoginPage = (props) => {
 							}
 							switch(result) {
 								case 'user':
-									dispatch({type: actions.setLoggedIn, value: true});
+									dispatch({type: actions.setLoggedIn, value: true, type: "student"});
 									break;
 								case 'admin':
-									dispatch({type: actions.setLoggedIn, value: true});
+									dispatch({type: actions.setLoggedIn, value: true, type: "instructor"});
 									break;
 								default:
 									setErrorMessage("Invalid username and password credentials passed!");

@@ -1,9 +1,9 @@
 import React from "react";
-import CodingPracticePage from "./CodingPracticePage.js";
+import UserPage from "./UserPage";
 
 const InstructorPage = (props) => {
     return (
-        <CodingPracticePage pageTitle="Instructor Page"/>
+        <UserPage pageTitle="Instructor Page"/>
     );
 }
 
