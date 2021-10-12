@@ -90,8 +90,7 @@ app.use('/', function (req, res) {
 		//------------------------------------------------------------------------------------------------------------
 		//------------------------------------------------------------------------------------------------------------
 		//------------------------------------------------------------------------------------------------------------
-		connection.query("SELECT * FROM login l, student s, insttructor i WHERE l.username = '" + data.name + "' AND "
-		"l.id = i.user_id OR l.id = s.user_id", function (error, results, fields)
+		connection.query("SELECT * FROM login WHERE l.username = '" + data.name + "'", function (error, results, fields)
 		{
 			if (error) throw error;
 			{
@@ -132,8 +131,8 @@ app.use('/', function (req, res) {
 		});
 	} else
 	{//if not logging in make a question
-		connection.query('INSERT INTO question (name, function_name, function_parameters, instructor_id)'
-		"VALUES ('" + data.qname + "', '" + data.funcname + "', " + data.funcparm + "', " + data.id ")",
+		connection.query('INSERT INTO question (name, function_name, function_parameters, instructor_id)' +
+		"VALUES ('" + data.qname + "', '" + data.funcname + "', " + data.funcparm + "', " + data.id + ")",
 		function (error, results, fields)
 		{
 		});
