@@ -3,13 +3,46 @@ import { Box } from "../components/Box";
 import { Input } from "../components/Input";
 import { Flex } from "../components/Flex";
 import { Button } from "../components/Button";
-import axios from "axios";
-import https from "https";
 import MasterContext from "../reducer/context";
 import { actions } from "../reducer/constants.js";
 import CodingPracticePage from "./CodingPracticePage";
-import serverURL from "../util/serverinfo";
 import cookie from "react-cookies";
+import { queryServer } from "../util/helpers";
+
+const handleLogin = (dispatch) => {
+	return (res) => {
+		if(res.status > 400) {
+			setErrorMessage("Unable to communicate with server!");
+			console.log(`Error: Bad response: ${res.status} ${res.statusText}`);
+		} else if(res.status != 200) {
+			return;
+		}
+		const [ result, sesID, userID ] = res.data.split(";");
+		if(sesID && userID) {
+			cookie.save('sesID', sesID);
+			cookie.save('userID', userID);
+		}
+		switch(result) {
+			case 'student':
+				dispatch({type: actions.setLoggedIn, value: true, userType: "student"});
+				break;
+			case 'instructor':
+				dispatch({type: actions.setLoggedIn, value: true, userType: "instructor"});
+				break;
+			default:
+				setErrorMessage("Invalid username and password credentials passed!");
+		}
+	};
+};
+
+const handleError = (setErrorMessage) => {
+	return (error) => {
+		if(error.request) {
+			setErrorMessage("Unable to communicate with server!");
+			console.log(`Error: ${error.message}\n${error.stack}`);
+		}
+	};
+};
 
 const LoginPage = (props) => {
 	const { dispatch } = useContext(MasterContext);
@@ -37,46 +70,7 @@ const LoginPage = (props) => {
 				<Input isPassword={true} defaultValue="Enter password" onChange={setPassword} />
 				<Button 
 					onClick={() => {
-						const postData = {
-							'name': username,
-							'pass': password,
-						};
-						axios.post(serverURL, postData, {
-							headers: {
-								'Content-Type': 'application/json',
-							},
-							timeout: 1000,
-							withCredentials: true,
-							httpsAgent: new https.Agent({ keepAlive: true }),
-						}).then((res) => {
-							if(res.status > 400) {
-								setErrorMessage("Unable to communicate with server!");
-								console.log(`Error: Bad response: ${res.status} ${res.statusText}`);
-							} else if(res.status != 200) {
-								return;
-							}
-							const [ result, sesID, userID ] = res.data.split(";");
-							if(sesID && userID) {
-								cookie.save('sesID', sesID);
-								cookie.save('userID', userID);
-							}
-							switch(result) {
-								case 'student':
-									dispatch({type: actions.setLoggedIn, value: true, userType: "student"});
-									break;
-								case 'instructor':
-									dispatch({type: actions.setLoggedIn, value: true, userType: "instructor"});
-									break;
-								default:
-									setErrorMessage("Invalid username and password credentials passed!");
-							}
-						})
-						.catch((error) => {
-							if(error.request) {
-								setErrorMessage("Unable to communicate with server!");
-								console.log(`Error: ${error.message}\n${error.stack}`);
-							}
-						});
+						queryServer('login', {name: username, pass: password}, handleLogin(dispatch), handleError(setErrorMessage));
 					}}
 					width={150}
 				>
