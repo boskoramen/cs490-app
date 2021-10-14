@@ -10,6 +10,7 @@ import UserPageHandler from "./page_handlers/UserPageHandler";
 import LoginPageHandler from "./page_handlers/LoginPageHandler";
 import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
 import { queryServer } from "./util/helpers";
+import CreateQuestionPage from "./pages/CreateQuestionPage";
 
 const handleSessionLogin = (dispatch) => {
     return (res) => {
@@ -36,6 +37,8 @@ const Master = () => {
     if(sesID && userID && !state.isLoggedIn) {
         queryServer('login', {sesID: sesID, id: userID}, handleSessionLogin(dispatch));
     }
+
+    return <Router><MasterContext.Provider value={{state, dispatch}}><CreateQuestionPage /></MasterContext.Provider></Router>;
 
     return (
         <Router>
