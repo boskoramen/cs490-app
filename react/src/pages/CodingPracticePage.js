@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Page } from "../components/Page";
 import styles from "../styles/main.scss";
 import { useLocation } from "react-router-dom";
+import MasterContext from "../reducer/context";
 
 const { codingPracticeHeader, codingPracticeTitle, codingPracticeContents } = styles;
 const CodingPracticePage = (props) => {
+    const { dispatch } = useContext(MasterContext);
     const location = useLocation();
     return (
         <Page {...props}>
@@ -13,7 +15,9 @@ const CodingPracticePage = (props) => {
             </div>
             <div className={codingPracticeContents}>
                 <div className={codingPracticeTitle}>
-                    {props.pageTitle}
+                    {props.headerFunction ? props.headerFunction(props, dispatch) :
+                    props.pageTitle
+                    }
                 </div>
                 {props.children}
             </div>

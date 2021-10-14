@@ -55,16 +55,17 @@ const LoginPage = (props) => {
 							} else if(res.status != 200) {
 								return;
 							}
-							const [ result, sesID ] = res.data.split(";");
-							if(sesID) {
+							const [ result, sesID, userID ] = res.data.split(";");
+							if(sesID && userID) {
 								cookie.save('sesID', sesID);
+								cookie.save('userID', userID);
 							}
 							switch(result) {
-								case 'user':
-									dispatch({type: actions.setLoggedIn, value: true, type: "student"});
+								case 'student':
+									dispatch({type: actions.setLoggedIn, value: true, userType: "student"});
 									break;
-								case 'admin':
-									dispatch({type: actions.setLoggedIn, value: true, type: "instructor"});
+								case 'instructor':
+									dispatch({type: actions.setLoggedIn, value: true, userType: "instructor"});
 									break;
 								default:
 									setErrorMessage("Invalid username and password credentials passed!");

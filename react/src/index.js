@@ -16,9 +16,11 @@ import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
 const Master = () => {
     const [ state, dispatch ] = useReducer(reducer, initialState);
     const sesID = cookie.load('sesID');
-    if(sesID && !state.isLoggedIn) {
+    const userID = cookie.load('userID');
+    if(sesID && userID && !state.isLoggedIn) {
         const postData = {
             'sesID': sesID,
+            'id': userID,
         };
         axios.post(serverURL, postData, {
             headers: {
@@ -28,7 +30,7 @@ const Master = () => {
             httpsAgent: new https.Agent({ keepAlive: true }),
         }).then((res) => {
             switch(res.data) {
-                case 'user':
+                case 'student':
                     dispatch({type: actions.setLoggedIn, value: true});
                     break;
                 case 'admin':
@@ -37,6 +39,7 @@ const Master = () => {
                 default:
                     // Session no longer valid, delete cookie
                     cookie.remove('sesID');
+                    cookie.remove('userID');
             }
         });
     }
