@@ -64,14 +64,104 @@ app.use('/', function (req, res) {
 	{
 		console.log("COOKIECAT! It's a treat for your tummy!");
 		//console.log(data.cookies);
-		if (sessions[data.sesID] != null && sessions[data.sesID].ip == req.ip)
+		if (sessions[data.sesID] != null && sessions[data.sesID].ip == req.ip && sessions[data.sesID].id == data.id)
 		{
 			console.log("COOKIECAT! It's super duper yummy!");
-			res.end(sessions[data.sesID].usertype);
+			console.log(data.id);
+			if (data.use == 'question')
+			{//if want to make a question
+				console.log("Riddle me this batman!");
+				success = 1;
+				connection.query('INSERT INTO question (name, function_name, function_parameters, instructor_id)' +
+					"VALUES ('" + data.qname + "', '" + data.funcname + "', " + data.funcparm + "', " + data.id + ")",
+					function (error, results, fields)
+				{//insert question into DB
+					if (error) throw error;
+					console.log('I hold all the answers, but am seen by none, what am I?');
+					connection.query('SELECT question_id FROM question WHERE name = ' + data.name, ' AND function_name = '
+						+ data.funcname + ' AND function_parameters = ' + data.funcparm + ' AND instructor_id = ' +
+						data.id, function (errors, result, field)
+					{
+						if (errors) throw errors;
+						console.log("You've foiled me again batman!");
+						res.send(result);
+					});
+				});
+			} else if (data.use == 'get_question')
+			{//if want to get all questions
+				console.log("Gotta catch 'em all");
+				connection.query('SELECT * FROM question', function (error, results, fields)
+				{
+					if (error) throw error;
+					res.send(results);
+				});
+			} else if (data.use == 'get_question')
+			{//if want to get all questions
+				console.log("Gotta catch 'em all");
+				connection.query('SELECT * FROM question', function (error, results, fields)
+				{
+					if (error) throw error;
+					console.log('Pokémon');
+					res.send(results);
+				});
+			} else if (data.use == 'test_case')
+			{//add a test case
+				console.log('Baka to test');
+				connection.query('INSERT INTO test_case (question_id, input, expected_output) VALUES (' + data.id
+					+ "', '" + data.input + "', " + data.ouput, function (errors, result, field)
+				{//insert test case into DB using retrieved question ID and given test case data
+					if (error) throw error;
+					console.log('Was an incredibly average anime');
+					res.send(data.input);
+				});
+			} else if (data.use == 'exam')
+			{//make an exam
+				console.log('');
+				connection.query("INSERT INTO exam (name, instructor_id) VALUES ('" + data.name + "', '" + data.id + ")",
+					function (error, results, fields)
+				{
+					if (error) throw error;
+					res.send(data.name);
+				});
+			} else if (data.use == 'get_exam')
+			{//get all related questions to an exam
+				connection.query('SELECT * FROM exam WHERE name = ' + data.name, function (errors, result, field)
+				{
+					if (error) throw error;
+					res.send(result);
+				});
+			} else if (data.use == 'get_exam_question')
+			{
+				connection.query('SELECT * FROM exam_question WHERE exam_id = ' + data.id, function (errors, result,
+					field)
+				{
+					if (error) throw error;
+					res.send(result);
+				});
+			} else if (data.use == 'get_question_id')
+			{
+				connection.query('SELECT * FROM question WHERE question_id = ' + data.id, function (errors, result,
+					field)
+				{
+					if (error) throw error;
+					res.send(result);
+				});
+			} else if (data.use == 'get_test_case')
+			{
+				connection.query('SELECT * FROM test_case WHERE question_id = ' + data.id, function (errors, result,
+					field)
+				{
+					if (error) throw error;
+					res.send(result);
+				});
+			} else
+			{//not using something, likely logging in
+				res.send(sessions[data.sesID].usertype);
+			}
 		} else
 		{
 			console.log("HE LEFT HIS FAMILY BEHIND!");
-			res.end('bad attempt');
+			res.send('bad attempt');
 		}
 	} else if (data.name != null)
 	{//if no sesID attempt to login
@@ -86,56 +176,48 @@ app.use('/', function (req, res) {
 		*/
 		
 		//if no sesID attempt to login
-		//TODO fix after DB shema change?-----------------------------------------------------------------------------
-		//------------------------------------------------------------------------------------------------------------
-		//------------------------------------------------------------------------------------------------------------
-		//------------------------------------------------------------------------------------------------------------
-		connection.query("SELECT * FROM login WHERE l.username = '" + data.name + "'", function (error, results, fields)
+		connection.query("SELECT * FROM login WHERE username = '" + data.name + "'", function (error, results, fields)
 		{
 			if (error) throw error;
+			if (results.length > 0) //if they exist in DB
 			{
-				if (results.length > 0) //if they exist in DB
-				{
-					console.log("My name is who");
-					if (crypto.pbkdf2Sync(data.pass, results[0].salt, 9000, 50, 'sha1').toString('hex') == results[0].passcode)
-					{//if the password matches the salted hash
-						console.log("My name is CHIKA CHIKA");
-						//create a session ID locally appended to the end of all previous session ID's
-						randy = Math.floor(Math.random() * max);
-						this_id = result
-						//TODO eventually delete old session ID's, after a predertermined amount of time
-						sessions =
-						{
-							...sessions,
-							[randy]:
-							{
-								usertype: results[0].usertype,
-								username: results[0].username,
-								ip: req.ip
-							},
-						}
-						console.log("SLIM SHADY!");
-						console.log("Cookiecat: " + randy);//It's a treat for your tummy
-						//res.cookie("sesID", randy);//send session ID to user as cookie
-						console.log("Cookiecat: " + randy);//It's a treat for your tummy
-						res.end(results[0].usertype + ";" + randy);//send usertype to user to finalize login
-					} else
+				console.log("My name is who");
+				if (crypto.pbkdf2Sync(data.pass, results[0].salt, 9000, 50, 'sha1').toString('hex') ==
+					results[0].passcode)
+				{//if the password matches the salted hash
+					console.log("My name is CHIKA CHIKA");
+					//create a session ID locally appended to the end of all previous session ID's
+					randy = Math.floor(Math.random() * max);
+					this_id = results[0].id;
+					//TODO eventually delete old session ID's, after a predertermined amount of time
+					sessions =
 					{
-						res.end("bad attempt");
+						...sessions,
+						[randy]:
+						{
+							usertype: results[0].usertype,
+							username: results[0].username,
+							id : results[0].id,
+							ip: req.ip
+						},
 					}
+					console.log("SLIM SHADY!");
+					//res.cookie("sesID", randy);//send session ID to user as cookie
+					console.log("Cookiecat: " + randy);//It's a treat for your tummy
+					res.send(results[0].usertype + ';' + randy + ';' + results[0].id);//send relevant login data
+					//currently usertype for frontend use seesion id num and userid num for future use
 				} else
 				{
-					res.end("bad attempt");
+					res.send("bad attempt");
 				}
+			} else
+			{
+				res.send("bad attempt");
 			}
 		});
 	} else
-	{//if not logging in make a question
-		connection.query('INSERT INTO question (name, function_name, function_parameters, instructor_id)' +
-		"VALUES ('" + data.qname + "', '" + data.funcname + "', " + data.funcparm + "', " + data.id + ")",
-		function (error, results, fields)
-		{
-		});
+	{//no usecase found
+		res.send("bad attempt");
 	}
 })
 
@@ -157,12 +239,12 @@ https.createServer(options, function (req, res) {
 		{
 			console.log("With the right password!");
 			res.writeHead(200);
-			res.end("hello world\n");
+			res.send("hello world\n");
 		}
 	} else
 	{
 		res.writeHead(200);
-		res.end("BAD ATTEMPT");
+		res.send("BAD ATTEMPT");
 	}
 }).listen(9000);
 */
