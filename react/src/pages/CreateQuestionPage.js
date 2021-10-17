@@ -6,19 +6,34 @@ import { Button } from "../components/Button";
 import { Flex } from "../components/Flex";
 import cookie from "react-cookies";
 
-const handleSubmitQuestion = (res) => {
-    switch(res.data) {
-        default:
-            ;
-    }
-};
-
 const CreateQuestionPage = (props) => {
     const [ prompt, setPrompt ] = useState('');
     const [ funcName, setFuncName ] = useState('');
     const [ funcParams, setFuncParams ] = useState('');
     const [ inputCases, setInputCases ] = useState([]);
     const [ outputCases, setOutputCases ] = useState([]);
+
+    const handleAddTestCases = (res) => {
+        // TODO: make sure this actually works
+        if(res.data != inputCases) {
+            // TODO: add error box here (akin to login page)
+            return;
+        }
+    };
+
+    const handleSubmitQuestion = (res) => {
+        if(!res.data) {
+            // TODO: add error box here (akin to login page)
+            return;
+        }
+        const questionID = res.data;
+        queryServer('test_case', {
+            input: inputCases,
+            output: outputCases,
+            id: questionID,
+        }, handleAddTestCases);
+    };
+
     return (
         <UserPage pageTitle="Create a Question" {...props}>
             <Flex flexDirection="column">
@@ -61,12 +76,12 @@ const CreateQuestionPage = (props) => {
                 />
                 <Button
                     onClick={() => {
+                        const userID = cookie.load('userID');
                         queryServer('question', {
                             name: prompt,
                             funcname: funcName,
                             funcparm: funcParams,
-                            input: inputCases,
-                            output: outputCases,
+                            id: userID,
                         }, handleSubmitQuestion);
                     }}
                 >
