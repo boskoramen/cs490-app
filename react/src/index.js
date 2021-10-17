@@ -38,8 +38,6 @@ const Master = () => {
         queryServer('login', {sesID: sesID, id: userID}, handleSessionLogin(dispatch));
     }
 
-    return <Router><MasterContext.Provider value={{state, dispatch}}><CreateQuestionPage /></MasterContext.Provider></Router>;
-
     return (
         <Router>
             <MasterContext.Provider value={{state, dispatch}}>
