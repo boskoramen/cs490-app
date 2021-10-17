@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Box } from "./Box.js";
 
 export const Input = (props) => {
-    const [value, setValue] = useState(props.defaultValue);
+    const defaultValue = props.defaultValue || '';
+    const [value, setValue] = useState(defaultValue);
     const [receivedInput, setReceivedInput] = useState(false);
     const [type, setType] = useState(props.type ? props.type : "text");
     return (
@@ -30,7 +31,7 @@ export const Input = (props) => {
                         setType("text");
                     }
                     setReceivedInput(false);
-                    setValue(props.defaultValue);
+                    setValue(defaultValue);
                 }
             }}
         /> :
@@ -64,7 +65,7 @@ export const Input = (props) => {
                             setType("text");
                         }
                         setReceivedInput(false);
-                        setValue(props.defaultValue);
+                        setValue(defaultValue);
                     }
                 }}
             />
