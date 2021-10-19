@@ -36,8 +36,10 @@ export const queryServer = (useCase, data, successCallback, errorCallback) => {
 		withCredentials: true,
 		httpsAgent: new https.Agent({ keepAlive: true }),
 	}).then((res) => {
-        successCallback(res);
+        if(successCallback)
+            successCallback(res);
     }).catch((error) => {
-        errorCallback(error);
+        if(errorCallback)
+            errorCallback(error);
     });
 };
