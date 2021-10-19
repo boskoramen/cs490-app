@@ -4,6 +4,8 @@ import { Input } from "../components/Input";
 import { queryServer } from "../util/helpers";
 import { Button } from "../components/Button";
 import { Flex } from "../components/Flex";
+import { Box } from "../components/Box";
+import { Redirect } from "react-router-dom";
 import cookie from "react-cookies";
 
 const CreateQuestionPage = (props) => {
@@ -12,31 +14,58 @@ const CreateQuestionPage = (props) => {
     const [ funcParams, setFuncParams ] = useState('');
     const [ inputCases, setInputCases ] = useState([]);
     const [ outputCases, setOutputCases ] = useState([]);
+    const [ questionID, setQuestionID ] = useState(null);
+    const [ errorMessage, setErrorMessage ] = useState('');
+    const [ success, setSuccess ] = useState(false);
 
     const handleAddTestCases = (res) => {
         // TODO: make sure this actually works
-        if(res.data != inputCases) {
-            // TODO: add error box here (akin to login page)
+        if(res.data != inputCases.length) {
+            setErrorMessage('Invalid test cases.');
             return;
         }
+        setSuccess(true);
     };
 
     const handleSubmitQuestion = (res) => {
-        if(!res.data) {
-            // TODO: add error box here (akin to login page)
+        if(res.data == 'bad attempt') {
+            setErrorMessage('Invalid question!');
             return;
         }
-        const questionID = res.data;
-        queryServer('test_case', {
-            input: inputCases,
-            output: outputCases,
-            id: questionID,
+        const userID = cookie.load('userID');
+        const sesID = cookie.load('sesID');
+        const qID = res.data[0].question_id;
+        setQuestionID(qID);
+        queryServer('many_test_case', {
+            test_case_list: Array.from(inputCases, (_, i) => {
+                return {
+                    input: inputCases[i],
+                    output: outputCases[i],
+                    questionID: qID,
+                };
+            }),
+            id: userID,
+            sesID: sesID,
         }, handleAddTestCases);
     };
 
     return (
-        <UserPage pageTitle="Create a Question" {...props}>
+        success ?
+        <Redirect to="/"/>
+        : <UserPage pageTitle="Create a Question" {...props}>
             <Flex flexDirection="column">
+                {errorMessage && 
+                    <Box 
+                        padding={20}
+                        borderStyle="solid"
+                        borderWidth="2px" 
+                        borderColor="red"
+                        color="red"
+                        fontStyle="italic"
+                    >
+                        {errorMessage}
+                    </Box>
+				}
                 <div>
                     Question Prompt:
                 </div>
@@ -76,19 +105,29 @@ const CreateQuestionPage = (props) => {
                 />
                 <Button
                     onClick={() => {
-                        const userID = cookie.load('userID');
-                        queryServer('question', {
-                            name: prompt,
-                            funcname: funcName,
-                            funcparm: funcParams,
-                            id: userID,
-                        }, handleSubmitQuestion);
+                        if(questionID === null) {
+                            if(inputCases.length != outputCases.length) {
+                                setErrorMessage(`Number of input cases ${inputCases.length > outputCases.length ? 'greater' : 'less'} than number of output cases!`);
+                                return;
+                            } else {
+                                setErrorMessage('');
+                            }
+                            const userID = cookie.load('userID');
+                            const sesID = cookie.load('sesID');
+                            queryServer('question', {
+                                name: prompt,
+                                funcname: funcName,
+                                funcparm: funcParams,
+                                id: userID,
+                                sesID: sesID,
+                            }, handleSubmitQuestion);
+                        }
                     }}
                 >
                     Submit
                 </Button>
             </Flex>
-        </UserPage>
+          </UserPage>
     );
 };
 

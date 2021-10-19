@@ -9,7 +9,7 @@ import CodingPracticePage from "./CodingPracticePage";
 import cookie from "react-cookies";
 import { queryServer } from "../util/helpers";
 
-const handleLogin = (dispatch) => {
+const handleLogin = (dispatch, setErrorMessage) => {
 	return (res) => {
 		if(res.status > 400) {
 			setErrorMessage("Unable to communicate with server!");
@@ -24,10 +24,8 @@ const handleLogin = (dispatch) => {
 		}
 		switch(result) {
 			case 'student':
-				dispatch({type: actions.setLoggedIn, value: true, userType: "student"});
-				break;
 			case 'instructor':
-				dispatch({type: actions.setLoggedIn, value: true, userType: "instructor"});
+				dispatch({type: actions.setLoggedIn, value: true, userType: result});
 				break;
 			default:
 				setErrorMessage("Invalid username and password credentials passed!");
@@ -70,7 +68,10 @@ const LoginPage = (props) => {
 				<Input isPassword={true} defaultValue="Enter password" onChange={setPassword} />
 				<Button 
 					onClick={() => {
-						queryServer('login', {name: username, pass: password}, handleLogin(dispatch), handleError(setErrorMessage));
+						queryServer('login', {
+							name: username, 
+							pass: password
+						}, handleLogin(dispatch, setErrorMessage), handleError(setErrorMessage));
 					}}
 					width={150}
 				>

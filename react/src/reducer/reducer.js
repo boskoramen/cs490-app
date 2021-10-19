@@ -7,7 +7,7 @@ const reducer = (state, action) => {
             if(!action.value) {
                 cookie.remove('sesID');
             }
-            return {...state, isLoggedIn: action.value, userType: action.type};
+            return {...state, isLoggedIn: action.value, userType: action.userType};
         default:
             console.log(`INVALID ACTION TYPE: ${action.type}`)
             return state;

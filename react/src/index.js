@@ -9,16 +9,17 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import UserPageHandler from "./page_handlers/UserPageHandler";
 import LoginPageHandler from "./page_handlers/LoginPageHandler";
 import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
+import CreateQuestionPageHandler from "./page_handlers/CreateQuestionPageHandler";
 import { queryServer } from "./util/helpers";
+
+const empty = () => {};
 
 const handleSessionLogin = (dispatch) => {
     return (res) => {
         switch(res.data) {
             case 'student':
-                dispatch({type: actions.setLoggedIn, value: true});
-                break;
-            case 'admin':
-                dispatch({type: actions.setLoggedIn, value: true});
+            case 'instructor':
+                dispatch({type: actions.setLoggedIn, value: true, userType: res.data});
                 break;
             default:
                 // Session no longer valid, delete cookie
@@ -33,8 +34,10 @@ const Master = () => {
     const sesID = cookie.load('sesID');
     const userID = cookie.load('userID');
 
+    console.log(`sesID: ${sesID}\nuserID: ${userID}`);
+
     if(sesID && userID && !state.isLoggedIn) {
-        queryServer('login', {sesID: sesID, id: userID}, handleSessionLogin(dispatch));
+        queryServer('login', {sesID: sesID, id: userID}, handleSessionLogin(dispatch), empty);
     }
 
     return (
@@ -46,6 +49,9 @@ const Master = () => {
                     </Route>
                     <Route path="/login">
                         <LoginPageHandler />
+                    </Route>
+                    <Route path="/create_question">
+                        <CreateQuestionPageHandler />
                     </Route>
                     <Route exact path="/">
                         <UserPageHandler />
