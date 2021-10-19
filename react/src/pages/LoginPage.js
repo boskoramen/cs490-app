@@ -9,8 +9,13 @@ import CodingPracticePage from "./CodingPracticePage";
 import cookie from "react-cookies";
 import { queryServer } from "../util/helpers";
 
-const handleLogin = (dispatch, setErrorMessage) => {
-	return (res) => {
+const LoginPage = (props) => {
+	const { dispatch } = useContext(MasterContext);
+	const [ username, setUsername ] = useState("");
+	const [ password, setPassword ] = useState("");
+	const [ errorMessage, setErrorMessage ] = useState("");
+
+	const handleLogin = (res) => {
 		if(res.status > 400) {
 			setErrorMessage("Unable to communicate with server!");
 			console.log(`Error: Bad response: ${res.status} ${res.statusText}`);
@@ -31,22 +36,14 @@ const handleLogin = (dispatch, setErrorMessage) => {
 				setErrorMessage("Invalid username and password credentials passed!");
 		}
 	};
-};
-
-const handleError = (setErrorMessage) => {
-	return (error) => {
+	
+	const handleError = (error) => {
 		if(error.request) {
 			setErrorMessage("Unable to communicate with server!");
 			console.log(`Error: ${error.message}\n${error.stack}`);
 		}
 	};
-};
 
-const LoginPage = (props) => {
-	const { dispatch } = useContext(MasterContext);
-	const [ username, setUsername ] = useState("");
-	const [ password, setPassword ] = useState("");
-	const [ errorMessage, setErrorMessage ] = useState("");
     return (
 		<CodingPracticePage {...props} pageTitle="Login">
 			<Flex flexDirection="column" width={300}>
@@ -71,7 +68,7 @@ const LoginPage = (props) => {
 						queryServer('login', {
 							name: username, 
 							pass: password
-						}, handleLogin(dispatch, setErrorMessage), handleError(setErrorMessage));
+						}, handleLogin, handleError);
 					}}
 					width={150}
 				>

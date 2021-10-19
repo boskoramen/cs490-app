@@ -12,10 +12,12 @@ import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
 import CreateQuestionPageHandler from "./page_handlers/CreateQuestionPageHandler";
 import { queryServer } from "./util/helpers";
 
-const empty = () => {};
+const Master = () => {
+    const [ state, dispatch ] = useReducer(reducer, initialState);
+    const sesID = cookie.load('sesID');
+    const userID = cookie.load('userID');
 
-const handleSessionLogin = (dispatch) => {
-    return (res) => {
+    const handleSessionLogin = (res) => {
         switch(res.data) {
             case 'student':
             case 'instructor':
@@ -27,17 +29,9 @@ const handleSessionLogin = (dispatch) => {
                 cookie.remove('userID');
         }
     };
-};
-
-const Master = () => {
-    const [ state, dispatch ] = useReducer(reducer, initialState);
-    const sesID = cookie.load('sesID');
-    const userID = cookie.load('userID');
-
-    console.log(`sesID: ${sesID}\nuserID: ${userID}`);
 
     if(sesID && userID && !state.isLoggedIn) {
-        queryServer('login', {sesID: sesID, id: userID}, handleSessionLogin(dispatch), empty);
+        queryServer('login', {sesID: sesID, id: userID}, handleSessionLogin, empty);
     }
 
     return (
