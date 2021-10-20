@@ -4,17 +4,30 @@ import { Input } from "../components/Input";
 import { queryServer } from "../util/helpers";
 import { Button } from "../components/Button";
 import { Flex } from "../components/Flex";
+import { Box } from "../components/Box";
 import cookie from "react-cookies";
+import Select from "react-select";
+import { Redirect } from "react-router-dom";
 
-const CreateQuestionPage = (props) => {
+const CreateExamPage = (props) => {
     const [ examName, setExamName ] = useState('');
-    const [ questionPool, setQuestionPool ] = useState([]);
+    const [ questionPool, setQuestionPool ] = useState(null);
     const [ questions, setQuestions ] = useState([]);
     const [ addingQuestion, setAddingQuestion ] = useState(false);
     const [ examID, setExamID ] = useState('');
+    const [ newQuestionType, setNewQuestionType ] = useState(null);
+    const [ newQuestionValue, setNewQuestionValue ] = useState(null);
+    const [ success, setSuccess ] = useState(false);
+
+    const userID = cookie.load('userID');
+    const sesID = cookie.load('sesID');
 
     const populateQuestionPool = (res) => {
-        // Figure out format for response before populating questionPool
+        if(!res.data) {
+            // Add error messages
+            return;
+        }
+        setQuestionPool(res.data);
     }
 
     const handleSubmitExam = (res) => {
@@ -22,20 +35,34 @@ const CreateQuestionPage = (props) => {
             // TODO: add error messages
             return;
         }
-        // Confirm contents of res.data
-        setExamID(res.data);
-        for(let question in questions) {
-            queryServer('add_question_exam', {
+        const newExamID = res.data[0].exam_id
+        setExamID(res.data[0].exam_id);
+        queryServer('add_many_question_exam', {
+            question_list: questions.map((question) => ({
                 question_id: question.id,
-                exam_id: examID,
-                point_value: question.point_value
-            });
-        }
+                point_value: question.pointValue,
+            })),
+            exam_id: newExamID,
+            id: userID,
+            sesID: sesID,
+        }, (res) => {
+            if(res.data != questions.length) {
+                // Add error messages here
+                return;
+            }
+            setSuccess(true);            
+        });
+    }
+    if(!questionPool) {
+        queryServer('get_question', {
+            instructor_id: userID,
+            id: userID,
+            sesID: sesID,
+        }, populateQuestionPool);
     }
 
-    queryServer('get_question', {}, populateQuestionPool);
-
     return (
+        !success ?
         <UserPage pageTitle="Create an Exam" {...props}>
             <Flex flexDirection="column">
                 <div>
@@ -55,17 +82,45 @@ const CreateQuestionPage = (props) => {
                     Add Question
                 </Button>
                 {!addingQuestion ? null :
-                    // TODO: Populate select element with questions from question pool (need to figure out data structure)
-                    <Flex>
+                    <Flex flexDirection="column">
                         <div>
                             Question type:
                         </div>
-                        <select/>
+                        <Select
+                            value={newQuestionType}
+                            onChange={setNewQuestionType}
+                            options={
+                                questionPool.map((question) => ({value: question, label: question.function_name}))
+                            }
+                        />
                         <div>
                             Point value:
                         </div>
-                        <Input />
-                        <Button>
+                        <Input
+                            value={newQuestionValue}
+                            onChange={(value) => {setNewQuestionValue(Number(value));}}
+                        />
+                        <Button
+                            onClick={() => {
+                                if(newQuestionType === null || newQuestionValue === null) {
+                                    // Add error messages
+                                    console.log("invalid question");
+                                    return;
+                                }
+                                const question = newQuestionType.value;
+                                setAddingQuestion(false);
+                                setQuestions([
+                                    ...questions,
+                                    {
+                                        id: question.question_id,
+                                        formattedName: question.function_name,
+                                        pointValue: newQuestionValue,
+                                    }
+                                ]);
+                                setNewQuestionType(null);
+                                setNewQuestionValue(null);
+                            }}
+                        >
                             Submit
                         </Button>
                     </Flex>
@@ -74,10 +129,10 @@ const CreateQuestionPage = (props) => {
                     return (
                         <Box>
                             <div>
-                                {question.formattedName}
+                                Name: {question.formattedName}
                             </div>
                             <div>
-                                {question.pointValue}
+                                Value: {question.pointValue}
                             </div>
                         </Box>
                     );
@@ -85,13 +140,11 @@ const CreateQuestionPage = (props) => {
                 <Button
                     onClick={() => {
                         if(!examID) {
-                            const userID = cookie.load('userID');
                             queryServer('exam', {
                                 name: examName,
                                 id: userID,
+                                sesID: sesID,
                             }, handleSubmitExam);
-                        } else {
-                            
                         }
                     }}
                 >
@@ -99,7 +152,8 @@ const CreateQuestionPage = (props) => {
                 </Button>
             </Flex>
         </UserPage>
+        : <Redirect to="/"/>
     );
 };
 
-export default CreateQuestionPage;
+export default CreateExamPage;

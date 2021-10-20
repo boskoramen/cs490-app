@@ -10,6 +10,7 @@ import UserPageHandler from "./page_handlers/UserPageHandler";
 import LoginPageHandler from "./page_handlers/LoginPageHandler";
 import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
 import CreateQuestionPageHandler from "./page_handlers/CreateQuestionPageHandler";
+import CreateExamPageHandler from "./page_handlers/CreateExamPageHandler";
 import { queryServer } from "./util/helpers";
 
 const Master = () => {
@@ -31,7 +32,7 @@ const Master = () => {
     };
 
     if(sesID && userID && !state.isLoggedIn) {
-        queryServer('login', {sesID: sesID, id: userID}, handleSessionLogin, empty);
+        queryServer('login', {sesID: sesID, id: userID}, handleSessionLogin);
     }
 
     return (
@@ -46,6 +47,9 @@ const Master = () => {
                     </Route>
                     <Route path="/create_question">
                         <CreateQuestionPageHandler />
+                    </Route>
+                    <Route path="/create_exam">
+                        <CreateExamPageHandler />
                     </Route>
                     <Route exact path="/">
                         <UserPageHandler />
