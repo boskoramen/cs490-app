@@ -49,7 +49,10 @@ var app = express();
 app.use(bodyParser.json({ type: 'application/json' }))
 app.use(cors({
 	allowedHeaders: 'Content-Type',
-	origin: 'http://localhost:8080',
+        origin: [
+	    'http://localhost:8080',
+	    'http://52.7.114.65',
+        ],
 	credentials: true,
 	exposedHeaders: 'Set-Cookie'
 }));
@@ -58,7 +61,7 @@ app.use(cors({
 app.use('/', function (req, res) {
 	console.log(req.body);
 	data = req.body;
-	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
+	res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
 	res.setHeader('Access-Control-Allow-Credentials', 'true');
 	res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
 	
