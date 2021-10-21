@@ -15,6 +15,7 @@ const CreateExamPage = (props) => {
     const [ questions, setQuestions ] = useState([]);
     const [ addingQuestion, setAddingQuestion ] = useState(false);
     const [ examID, setExamID ] = useState('');
+    // TODO: Make sure there are no duplicates for a question type in questions
     const [ newQuestionType, setNewQuestionType ] = useState(null);
     const [ newQuestionValue, setNewQuestionValue ] = useState(null);
     const [ success, setSuccess ] = useState(false);
@@ -127,7 +128,7 @@ const CreateExamPage = (props) => {
                 }
                 {questions.map((question) => {
                     return (
-                        <Box>
+                        <Box key={question.formattedName}>
                             <div>
                                 Name: {question.formattedName}
                             </div>
@@ -139,12 +140,31 @@ const CreateExamPage = (props) => {
                 })}
                 <Button
                     onClick={() => {
+                        if(!questions.length || !examName) {
+                            return;
+                        }
                         if(!examID) {
                             queryServer('exam', {
                                 name: examName,
                                 id: userID,
                                 sesID: sesID,
                             }, handleSubmitExam);
+                        } else {
+                            queryServer('add_many_question_exam', {
+                                question_list: questions.map((question) => ({
+                                    question_id: question.id,
+                                    point_value: question.pointValue,
+                                })),
+                                exam_id: newExamID,
+                                id: userID,
+                                sesID: sesID,
+                            }, (res) => {
+                                if(res.data != questions.length) {
+                                    // Add error messages here
+                                    return;
+                                }
+                                setSuccess(true);            
+                            });
                         }
                     }}
                 >
