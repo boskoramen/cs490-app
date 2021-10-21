@@ -48,7 +48,7 @@ const TakeExamPage = (props) => {
             id: userID,
             sesID: sesID,
             test_id: res.data.test_id,
-            answer_list: questionPool.map((question) => ({question_id: question.question_id, answer: answers[question.question_id]}))
+            answer_list: questionPool.map((question) => ({exam_question_id: question.exam_question_id, answer: answers[question.question_id]}))
         }, (res) => {
             if(!res.data) {
                 // TODO: add error handling
@@ -73,7 +73,7 @@ const TakeExamPage = (props) => {
         queryServer('get_question_id', {
             id: userID,
             sesID: sesID,
-            question_id: questionPool[0].question_id,
+            question_id: questionPool[currentQuestionIdx].question_id,
         }, setQuestion);
     }
 
@@ -82,6 +82,7 @@ const TakeExamPage = (props) => {
         <UserPage pageTitle="Take Exam" {...props}>
             {currentQuestion &&
             <Flex flexDirection="column">
+                {questionPool && questionPool.length > 1 &&
                 <Button
                     onClick={() => {
                         const newIdx = (currentQuestionIdx + 1) < questionPool.length ? currentQuestionIdx + 1 : 0;
@@ -95,6 +96,7 @@ const TakeExamPage = (props) => {
                 >
                     Next
                 </Button>
+                }
                 <div>
                     {currentQuestion.name}
                 </div>

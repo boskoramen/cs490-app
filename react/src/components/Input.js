@@ -3,36 +3,36 @@ import { Box } from "./Box.js";
 
 export const Input = (props) => {
     const defaultValue = props.defaultValue || '';
-    const [value, setValue] = useState(defaultValue);
-    const [receivedInput, setReceivedInput] = useState(false);
-    const [type, setType] = useState(props.type ? props.type : "text");
+    const [ focused, setFocused ] = useState(false);
+
+    let value = props.value || '';
+    let type = props.type ? props.type : "text";
+    if(!value) {
+        if(!focused) {
+            if(props.isPassword) {
+                type = 'text';
+            }
+            value = defaultValue;
+        }
+    } else if(props.isPassword) {
+        type = 'password';
+    }
+    
     return (
         type === "textbox" ? 
         <textarea
             onChange={(e) => {
                 const target = e.target.value;
-                setValue(target);
-                if(target) {
-                    setReceivedInput(true);
-                }
                 const onChange = props.onChange;
                 if(onChange) {
                     onChange(target);
                 }
             }}
             onFocus={(e) => {
-                if(!receivedInput) {
-                    setValue("");
-                }                    
+                setFocused(true);                  
             }}
             onBlur={(e) => {
-                if(!value) {
-                    if(props.isPassword) {
-                        setType("text");
-                    }
-                    setReceivedInput(false);
-                    setValue(defaultValue);
-                }
+                setFocused(false);
             }}
         /> :
         <Box>
@@ -40,33 +40,17 @@ export const Input = (props) => {
                 type={type}
                 value={value}
                 onChange={(e) => {
-                    const target = e.target.value;
-                    setValue(target);
-                    if(target) {
-                        if(props.isPassword) {
-                            setType("password");
-                        }
-                        setReceivedInput(true);
-                    }
-                    
+                    const target = e.target.value;                    
                     const onChange = props.onChange;
                     if(onChange) {
                         onChange(target);
                     }
                 }}
                 onFocus={(e) => {
-                    if(!receivedInput) {
-                        setValue("");
-                    }                    
+                    setFocused(true);               
                 }}
                 onBlur={(e) => {
-                    if(!value) {
-                        if(props.isPassword) {
-                            setType("text");
-                        }
-                        setReceivedInput(false);
-                        setValue(defaultValue);
-                    }
+                    setFocused(false);
                 }}
             />
         </Box>
