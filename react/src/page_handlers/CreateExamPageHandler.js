@@ -6,7 +6,7 @@ import MasterContext from "../reducer/context";
 const CreateExamPageHandler = (props) => {
     const { state } = useContext(MasterContext);
     return (
-        !state.isLoggedIn ?
+        !state.isLoggedIn && state.userType != 'instructor' ?
         <Redirect to="/" />
         : <CreateExamPage />
     );
