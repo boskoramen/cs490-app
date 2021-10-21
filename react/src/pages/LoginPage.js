@@ -60,9 +60,18 @@ const LoginPage = (props) => {
 				</Box>
 				}
 				<div>Username</div>
-				<Input defaultValue="Enter username" onChange={setUsername} />
+				<Input
+					defaultValue="Enter username"
+					value={username}
+					onChange={setUsername}
+				/>
 				<div>Password</div>
-				<Input isPassword={true} defaultValue="Enter password" onChange={setPassword} />
+				<Input
+					isPassword={true}
+					defaultValue="Enter password"
+					value={password}
+					onChange={setPassword}
+				/>
 				<Button 
 					onClick={() => {
 						queryServer('login', {

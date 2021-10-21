@@ -70,6 +70,7 @@ const CreateExamPage = (props) => {
                     Exam Name:
                 </div>
                 <Input
+                    value={examName}
                     onChange={setExamName}
                 />
                 <div>

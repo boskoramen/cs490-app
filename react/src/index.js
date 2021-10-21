@@ -12,8 +12,10 @@ import LoginPageHandler from "./page_handlers/LoginPageHandler";
 import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
 import CreateQuestionPageHandler from "./page_handlers/CreateQuestionPageHandler";
 import CreateExamPageHandler from "./page_handlers/CreateExamPageHandler";
+import TestPickerPageHandler from "./page_handlers/TestPickerPageHandler";
 import TakeExamPageHandler from "./page_handlers/TakeExamPageHandler";
 import { queryServer } from "./util/helpers";
+import ReviewTestPageHandler from "./page_handlers/ReviewTestPageHandler";
 
 const Master = () => {
     const [ state, dispatch ] = useReducer(reducer, initialState);
@@ -58,6 +60,12 @@ const Master = () => {
                     </Route>
                     <Route path="/take_exam">
                         <TakeExamPageHandler />
+                    </Route>
+                    <Route path="/review_exam_results">
+                        <TestPickerPageHandler />
+                    </Route>
+                    <Route path="/review_exam">
+                        <ReviewTestPageHandler />
                     </Route>
                     <Route exact path="/">
                         <UserPageHandler />

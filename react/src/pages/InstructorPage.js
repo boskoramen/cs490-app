@@ -13,6 +13,9 @@ const InstructorPage = (props) => {
                 <Link to="/create_exam">
                     Create Exam
                 </Link>
+                <Link to="/exam_picker">
+                    Review Exam
+                </Link>
             </Flex>
         </UserPage>
     );

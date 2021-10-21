@@ -71,18 +71,21 @@ const CreateQuestionPage = (props) => {
                 </div>
                 <Input
                     type="textbox"
+                    value={prompt}
                     onChange={setPrompt}
                 />
                 <div>
                     Function Name:
                 </div>
                 <Input
+                    value={funcName}
                     onChange={setFuncName}
                 />
                 <div>
                     Function Params:
                 </div>
                 <Input
+                    value={funcParams}
                     onChange={setFuncParams}
                 />
                 <div>
@@ -90,6 +93,7 @@ const CreateQuestionPage = (props) => {
                 </div>
                 <Input
                     type="textbox"
+                    value={inputCases.join('\n')}
                     onChange={(inputs) => {
                         setInputCases(inputs.split('\n'));
                     }}
@@ -99,6 +103,7 @@ const CreateQuestionPage = (props) => {
                 </div>
                 <Input
                     type="textbox"
+                    value={outputCases.join('\n')}
                     onChange={(outputs) => {
                         setOutputCases(outputs.split('\n'));
                     }}
