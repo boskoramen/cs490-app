@@ -112,7 +112,6 @@ const TakeExamPage = (props) => {
                 <Button
                     onClick={() => {
                         if(currentQuestion && Object.keys(answers).length === questionPool.length) {
-                            setSuccess(true);
                             queryServer('start_test', {
                                 id: userID,
                                 sesID: sesID,
