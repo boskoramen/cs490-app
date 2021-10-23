@@ -40,7 +40,7 @@ const ReviewTestPage = (props) => {
         }
         setState({
             ...state,
-            answerPool: res.data
+            answerPool: res.data,
         });
     }
 
@@ -57,7 +57,7 @@ const ReviewTestPage = (props) => {
                 ...feedback,
                 [currentAnswer.test_answer_id]: {
                     ...feedback[currentAnswer.test_answer_id],
-                    point_value: newExamQuestion.point_value,
+                    ...(feedback[currentAnswer.test_answer_id]?.point_value ? {} : {point_value: newExamQuestion.point_value}),
                 }
             }
         });
@@ -81,17 +81,25 @@ const ReviewTestPage = (props) => {
 
     return (
         !success ?
-        <UserPage pageTitle="Take Exam" {...props}>
+        <UserPage pageTitle="Review Exam" {...props}>
             {currentAnswer &&
             <Flex flexDirection="column">
                 {answerPool && answerPool.length > 1 &&
                 <Button
                     onClick={() => {
                         const newIdx = (currentAnswerIdx + 1) < answerPool.length ? currentAnswerIdx + 1 : 0;
+                        const newTestAnswerId = answerPool[newIdx].test_answer_id
                         setState({
                             ...state,
                             currentAnswerIdx: newIdx,
                             currentExamQuestion: null,
+                            feedback: {
+                                ...feedback,
+                                [newTestAnswerId]: {
+                                    ...feedback[newTestAnswerId],
+                                    ...(feedback[newTestAnswerId]?.feedback ? {} : {feedback: ''})
+                                }
+                            },
                         });
                     }}
                 >
@@ -103,13 +111,14 @@ const ReviewTestPage = (props) => {
                     name="code-editor"
                     readOnly={true}
                     value={currentAnswer.answer || ""}
+                    height={200}
                 />
                 <div>
                     Feedback:
                 </div>
                 <Input
                     type="textbox"
-                    value={(feedback[currentAnswer.test_answer_id] && feedback[currentAnswer.test_answer_id].feedback) || ''}
+                    value={feedback[currentAnswer.test_answer_id]?.feedback || ''}
                     onChange={(value) => {
                         const curFeedback = feedback[currentAnswer.test_answer_id];
                         setState({
@@ -159,20 +168,21 @@ const ReviewTestPage = (props) => {
                                 })),
                             }, () => {
                                 setState({...state, success: true});
+                                console.log('get test')
                                 queryServer('get_test', {
                                     id: userID,
                                     sesID: sesID,
                                     test_id: testID
                                 }, (res) => {
+                                    console.log('update score');
                                     queryServer('update_score', {
                                         id: userID,
                                         sesID: sesID,
                                         student_id: res[0].student_id,
                                         test_id: testID,
-                                    }, () => {setState({...state, success: true});}
-                                );}
-                                );}
-                            );
+                                    }, () => {setState({...state, success: true});});
+                                });
+                            });
                         }
                     }}
                 >

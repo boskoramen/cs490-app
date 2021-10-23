@@ -5,9 +5,9 @@ export const Input = (props) => {
     const defaultValue = props.defaultValue || '';
     const [ focused, setFocused ] = useState(false);
 
-    let value = props.value || '';
+    let value = props.value === undefined ? '' : props.value;
     let type = props.type ? props.type : "text";
-    if(!value) {
+    if(value === '') {
         if(!focused) {
             if(props.isPassword) {
                 type = 'text';
@@ -21,6 +21,7 @@ export const Input = (props) => {
     return (
         type === "textbox" ? 
         <textarea
+            value={value}
             onChange={(e) => {
                 const target = e.target.value;
                 const onChange = props.onChange;
