@@ -103,6 +103,7 @@ const TakeExamPage = (props) => {
                 <AceEditor
                     mode="python"
                     name="code-editor"
+                    height={200}
                     value={answers[questionPool[currentQuestionIdx].question_id] || ""}
                     onChange={(value) => {
                         setAnswers({
