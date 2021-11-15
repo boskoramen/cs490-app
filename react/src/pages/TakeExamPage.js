@@ -10,15 +10,22 @@ import { Button } from "../components/Button";
 
 import "ace-builds/src-noconflict/mode-python";
 
-
+// TODO: have a shared state for everything
+// TODO: change state to localState, add localState helper???
 const TakeExamPage = (props) => {
-    const { state } = useContext(MasterContext);
-    const { examID } = state;
-    const [ questionPool, setQuestionPool ] = useState(null);
-    const [ currentQuestion, setCurrentQuestion ] = useState(null);
-    const [ success, setSuccess ] = useState(false);
-    const [ currentQuestionIdx, setCurrentQuestionIdx ] = useState(0);
-    const [ answers, setAnswers ] = useState({});
+    const context = useContext(MasterContext);
+    const { examID } = context.state;
+    const [ state, setState ] = useState({
+        questionPool: null,
+        currentQuestion: null,
+        success: false,
+        currentQuestionIdx: 0,
+        answers: {},
+    });
+    const { 
+        questionPool, currentQuestion, success,
+        currentQuestionIdx, answers
+    } = state;
 
     const userID = cookie.load('userID');
     const sesID = cookie.load('sesID');
@@ -28,53 +35,41 @@ const TakeExamPage = (props) => {
             // TODO: add error handling
             return;
         }
-        setQuestionPool(res.data);
+        const newQuestionPool = res.data;
+        let newAnswers = { ...answers };
+        newQuestionPool.map((question) => {
+            const question_args = question.function_parameters.split(',').map((param) => (param.trim().replace(/\s+/g, ' ').split(' ')[1])).join(', ')
+            newAnswers = {
+                ...newAnswers,
+                [question.question_id]: `def ${question.function_name}(${question_args}):\n\t`,
+        };});
+        setState({
+            ...state,
+            questionPool: newQuestionPool,
+            currentQuestion: newQuestionPool[currentQuestionIdx],
+            answers: newAnswers,
+        });
     }
 
-    const setQuestion = (res) => {
-        if(!res.data) {
+    const handleSubmitAnswers = (res) => {
+        if(res.data == 'bad attempt') {
             // TODO: add error handling
             return;
-        }
-        setCurrentQuestion(res.data || 'bruh');
-    }
-
-    const handleStartTest = (res) => {
-        if(!res.data) {
-            // TODO: add error handling
-            return;
-        }
-        queryServer('add_many_answer', {
-            id: userID,
-            sesID: sesID,
-            test_id: res.data.test_id,
-            answer_list: questionPool.map((question) => ({exam_question_id: question.exam_question_id, answer: answers[question.question_id]}))
-        }, (res) => {
-            if(!res.data) {
-                // TODO: add error handling
-                return;
-            } else if(res.data != questionPool.length) {
-                // TODO: add error handling
-                return;
-            }
-            setSuccess(true);
+        } 
+        setState({
+            ...state,
+            success: true
         });
     }
 
     if(!questionPool) {
-        queryServer('get_exam_question', {
+        queryServer('get_an_exam', {
             id: userID,
             sesID: sesID,
             exam_id: examID,
         }, populateQuestionPool);
     } else if(!questionPool.length) {
         console.log('INVALID TEST');
-    } else if(currentQuestion === null) {
-        queryServer('get_question_id', {
-            id: userID,
-            sesID: sesID,
-            question_id: questionPool[currentQuestionIdx].question_id,
-        }, setQuestion);
     }
 
     return (
@@ -86,12 +81,11 @@ const TakeExamPage = (props) => {
                 <Button
                     onClick={() => {
                         const newIdx = (currentQuestionIdx + 1) < questionPool.length ? currentQuestionIdx + 1 : 0;
-                        setCurrentQuestionIdx(newIdx);
-                        queryServer('get_question_id', {
-                            id: userID,
-                            sesID: sesID,
-                            question_id: questionPool[newIdx].question_id,
-                        }, setQuestion);
+                        setState({
+                            ...state,
+                            currentQuestionIdx: newIdx,
+                            currentQuestion: questionPool[newIdx]
+                        });
                     }}
                 >
                     Next
@@ -106,20 +100,24 @@ const TakeExamPage = (props) => {
                     height={200}
                     value={answers[questionPool[currentQuestionIdx].question_id] || ""}
                     onChange={(value) => {
-                        setAnswers({
-                            ...answers,
-                            [questionPool[currentQuestionIdx].question_id]: value,
+                        setState({
+                            ...state,
+                            answers: {
+                                ...answers,
+                                [questionPool[currentQuestionIdx].question_id]: value,
+                            }
                         });
                     }}
                 />
                 <Button
                     onClick={() => {
                         if(currentQuestion && Object.keys(answers).length === questionPool.length) {
-                            queryServer('start_test', {
+                            queryServer('add_many_answer', {
                                 id: userID,
                                 sesID: sesID,
                                 exam_id: examID,
-                            }, handleStartTest);
+                                answer_list: questionPool.map((question) => ({question_id: question.question_id, answer: answers[question.question_id]}))
+                            }, handleSubmitAnswers);
                         }
                     }}
                 >
