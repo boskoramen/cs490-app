@@ -14,7 +14,6 @@ const CreateExamPage = (props) => {
     const [ questionPool, setQuestionPool ] = useState(null);
     const [ questions, setQuestions ] = useState([]);
     const [ addingQuestion, setAddingQuestion ] = useState(false);
-    const [ examID, setExamID ] = useState('');
     // TODO: Make sure there are no duplicates for a question type in questions
     const [ newQuestionType, setNewQuestionType ] = useState(null);
     const [ newQuestionValue, setNewQuestionValue ] = useState(null);
@@ -35,24 +34,11 @@ const CreateExamPage = (props) => {
         if(!res.data) {
             // TODO: add error messages
             return;
+        } else if(res.data == 'bad attempt') {
+            // TODO: add error messages
+            return;
         }
-        const newExamID = res.data[0].exam_id
-        setExamID(res.data[0].exam_id);
-        queryServer('add_many_question_exam', {
-            question_list: questions.map((question) => ({
-                question_id: question.id,
-                point_value: question.pointValue,
-            })),
-            exam_id: newExamID,
-            id: userID,
-            sesID: sesID,
-        }, (res) => {
-            if(res.data != questions.length) {
-                // Add error messages here
-                return;
-            }
-            setSuccess(true);            
-        });
+        setSuccess(true);
     }
     if(!questionPool) {
         queryServer('get_question', {
@@ -144,29 +130,15 @@ const CreateExamPage = (props) => {
                         if(!questions.length || !examName) {
                             return;
                         }
-                        if(!examID) {
-                            queryServer('exam', {
-                                name: examName,
-                                id: userID,
-                                sesID: sesID,
-                            }, handleSubmitExam);
-                        } else {
-                            queryServer('add_many_question_exam', {
-                                question_list: questions.map((question) => ({
-                                    question_id: question.id,
-                                    point_value: question.pointValue,
-                                })),
-                                exam_id: newExamID,
-                                id: userID,
-                                sesID: sesID,
-                            }, (res) => {
-                                if(res.data != questions.length) {
-                                    // Add error messages here
-                                    return;
-                                }
-                                setSuccess(true);            
-                            });
-                        }
+                        queryServer('exam', {
+                            name: examName,
+                            question_list: questions.map((question) => ({
+                                question_id: question.id,
+                                point_value: question.pointValue,
+                            })),
+                            id: userID,
+                            sesID: sesID,
+                        }, handleSubmitExam);
                     }}
                 >
                     Submit

@@ -43,9 +43,13 @@ export const Input = (props) => {
                 onChange={(e) => {
                     const target = e.target.value;                    
                     const onChange = props.onChange;
+                    console.log(`on change: \"${target}\"`);
                     if(onChange) {
                         onChange(target);
                     }
+                }}
+                onClick={(e) => {
+                    console.log('on click')
                 }}
                 onFocus={(e) => {
                     setFocused(true);               

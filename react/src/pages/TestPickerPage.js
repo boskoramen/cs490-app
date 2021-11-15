@@ -10,11 +10,28 @@ import { actions } from "../reducer/constants";
 const TestPickerPage = (props) => {
     const { state, dispatch } = useContext(MasterContext);
     const [ testPool, setTestPool ] = useState(null);
-    const [ studentPool, setStudentPool ] = useState(null);
     const [ testID, setTestID ] = useState(null);
 
     const userID = cookie.load('userID');
     const sesID = cookie.load('sesID');
+
+    queryServer('review', {
+        answer_list: [
+            {
+                review: 'Good job',
+                score:  '1010',
+                test_answer_id: 102,
+                constraints: 'for',
+            },
+            {
+                review: 'Good job',
+                score:  '1011',
+                test_answer_id: 103,
+                constraints: 'for',
+            }
+        ],
+        test_id: 127,
+    });
 
     let studentTestList = [];
 
@@ -32,30 +49,13 @@ const TestPickerPage = (props) => {
             sesID: sesID,
             exam_id: state.examID,
         }, populateTestPool);
-    } else if(!studentPool) {
-        queryServer('get_student', {
-            id: userID,
-            sesID: sesID,
-        }, (res) => {setStudentPool(res.data);});
-    } else {
-        studentTestList = testPool.map((test) => {
-            for(let i = 0; i < studentPool.length; i++) {
-                const student = studentPool[i];
-                if(student.id == test.student_id) {
-                    return {
-                        name: student.username,
-                        test_id: test.test_id,
-                    };
-                }
-            }
-        })
     }
 
     // TODO: turn button into anchor
     return (
         testID === null ?
         <UserPage pageTitle="Pick an Exam">
-            {studentTestList.map((entry) => {
+            {testPool.map((entry) => {
                 console.log(`entry: ${JSON.stringify(entry)}`);
                 return (
                     <Button

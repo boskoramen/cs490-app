@@ -6,12 +6,19 @@ import { Button } from "../components/Button";
 import { Flex } from "../components/Flex";
 import { Box } from "../components/Box";
 import { Redirect } from "react-router-dom";
+import Select from "react-select";
 import cookie from "react-cookies";
+
+// TODO: Add regex safety check for function name being present in the prompt
+// TODO: Allow question header to automatically be added(?)
+// TODO: fix adding test cases to be more user friendly (similar to adding question to exam)
 
 const CreateQuestionPage = (props) => {
     const [ prompt, setPrompt ] = useState('');
     const [ funcName, setFuncName ] = useState('');
     const [ funcParams, setFuncParams ] = useState('');
+    const [ difficulty, setDifficulty ] = useState('');
+    const [ topic, setTopic ] = useState('');
     const [ inputCases, setInputCases ] = useState([]);
     const [ outputCases, setOutputCases ] = useState([]);
     const [ questionID, setQuestionID ] = useState(null);
@@ -75,6 +82,26 @@ const CreateQuestionPage = (props) => {
                     onChange={setPrompt}
                 />
                 <div>
+                    Topic:
+                </div>
+                <Select
+                    value={topic}
+                    onChange={setTopic}
+                    options={
+                        ['For', 'While', 'Recursion', 'If'].map((entry) => ({value: entry, label: entry}))
+                    }
+                />
+                <div>
+                    Difficulty:
+                </div>
+                <Select
+                    value={difficulty}
+                    onChange={setDifficulty}
+                    options={
+                        ['Easy', 'Medium', 'Hard'].map((entry) => ({value: entry, label: entry}))
+                    }
+                />
+                <div>
                     Function Name:
                 </div>
                 <Input
@@ -87,6 +114,15 @@ const CreateQuestionPage = (props) => {
                 <Input
                     value={funcParams}
                     onChange={setFuncParams}
+                />
+                <div>
+                    Constraints:
+                </div>
+                <Input
+                    type="checkbox"
+                    onChange={(value) => {
+                        console.log(`value for checkbox: ${value}`);
+                    }}
                 />
                 <div>
                     Input Cases (separate each set of input with a newline):
@@ -123,6 +159,9 @@ const CreateQuestionPage = (props) => {
                                 name: prompt,
                                 funcname: funcName,
                                 funcparm: funcParams,
+                                difficulty: difficulty.value,
+                                topic: topic.value,
+                                constraint: 'for',
                                 id: userID,
                                 sesID: sesID,
                             }, handleSubmitQuestion);

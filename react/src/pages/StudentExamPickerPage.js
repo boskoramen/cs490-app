@@ -24,7 +24,7 @@ const StudentExamPickerPage = (props) => {
     }
 
     if(!examPool) {
-        queryServer('get_exam', {
+        queryServer('get_all_exam', {
             id: userID,
             sesID: sesID,
         }, populateExamPool);

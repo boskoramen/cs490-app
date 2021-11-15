@@ -11,7 +11,7 @@ const CodingPracticePage = (props) => {
             <div className={codingPracticeHeader}>
                 CodingPractice
             </div>
-            <div className={codingPracticeContents}>
+            <div className={codingPracticeContents} style={{width: "100%"}}>
                 <div className={codingPracticeTitle}>
                     {props.headerFunction ? props.headerFunction(props, dispatch) :
                     props.pageTitle
