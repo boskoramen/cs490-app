@@ -1,5 +1,6 @@
 import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
+import { Textbox } from "../components/Textbox";
 import { queryServer } from "../util/helpers";
 import { Flex } from "../components/Flex";
 import cookie from "react-cookies";
@@ -14,9 +15,9 @@ import "ace-builds/src-noconflict/mode-python";
 const { max, min } = Math;
 
 const ReviewTestPage = (props) => {
-    const contextState = useContext(MasterContext).state;
-    const { testID } = contextState;
-    const [ state, setState ] = useState({
+    const { state } = useContext(MasterContext);
+    const { testID } = state;
+    const [ localState, setLocalState ] = useState({
         answerPool: null,
         currentExamQuestion: null,
         success: false,
@@ -26,7 +27,7 @@ const ReviewTestPage = (props) => {
     const {
         answerPool, currentExamQuestion, success,
         currentAnswerIdx, feedback
-    } = state;
+    } = localState;
 
     const userID = cookie.load('userID');
     const sesID = cookie.load('sesID');
@@ -38,8 +39,8 @@ const ReviewTestPage = (props) => {
             // TODO: add error handling
             return;
         }
-        setState({
-            ...state,
+        setLocalState({
+            ...localState,
             answerPool: res.data,
         });
     }
@@ -50,8 +51,8 @@ const ReviewTestPage = (props) => {
             return;
         }
         const newExamQuestion = res.data[0];
-        setState({
-            ...state,
+        setLocalState({
+            ...localState,
             currentExamQuestion: newExamQuestion,
             feedback: {
                 ...feedback,
@@ -89,8 +90,8 @@ const ReviewTestPage = (props) => {
                     onClick={() => {
                         const newIdx = (currentAnswerIdx + 1) < answerPool.length ? currentAnswerIdx + 1 : 0;
                         const newTestAnswerId = answerPool[newIdx].test_answer_id
-                        setState({
-                            ...state,
+                        setLocalState({
+                            ...localState,
                             currentAnswerIdx: newIdx,
                             currentExamQuestion: null,
                             feedback: {
@@ -116,13 +117,12 @@ const ReviewTestPage = (props) => {
                 <div>
                     Feedback:
                 </div>
-                <Input
-                    type="textbox"
+                <Textbox
                     value={feedback[currentAnswer.test_answer_id]?.feedback || ''}
                     onChange={(value) => {
                         const curFeedback = feedback[currentAnswer.test_answer_id];
-                        setState({
-                            ...state,
+                        setLocalState({
+                            ...localState,
                             feedback: {
                                 ...feedback,
                                 [currentAnswer.test_answer_id]: {
@@ -141,8 +141,8 @@ const ReviewTestPage = (props) => {
                     value={(feedback[currentAnswer.test_answer_id] && feedback[currentAnswer.test_answer_id].points) || 0}
                     onChange={(value) => {
                         const curFeedback = feedback[currentAnswer.test_answer_id];
-                        setState({
-                            ...state,
+                        setLocalState({
+                            ...localState,
                             feedback: {
                                 ...feedback,
                                 [currentAnswer.test_answer_id]: {
@@ -167,7 +167,7 @@ const ReviewTestPage = (props) => {
                                     status: 'grouper',
                                 })),
                             }, () => {
-                                setState({...state, success: true});
+                                setLocalState({...localState, success: true});
                                 console.log('get test')
                                 queryServer('get_test', {
                                     id: userID,
@@ -180,7 +180,7 @@ const ReviewTestPage = (props) => {
                                         sesID: sesID,
                                         student_id: res[0].student_id,
                                         test_id: testID,
-                                    }, () => {setState({...state, success: true});});
+                                    }, () => {setLocalState({...localState, success: true});});
                                 });
                             });
                         }

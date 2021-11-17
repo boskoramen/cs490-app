@@ -15,26 +15,6 @@ const TestPickerPage = (props) => {
     const userID = cookie.load('userID');
     const sesID = cookie.load('sesID');
 
-    queryServer('review', {
-        answer_list: [
-            {
-                review: 'Good job',
-                score:  '1010',
-                test_answer_id: 102,
-                constraints: 'for',
-            },
-            {
-                review: 'Good job',
-                score:  '1011',
-                test_answer_id: 103,
-                constraints: 'for',
-            }
-        ],
-        test_id: 127,
-    });
-
-    let studentTestList = [];
-
     const populateTestPool = (res) => {
         if(!res.data) {
             // Add error handling
@@ -55,7 +35,7 @@ const TestPickerPage = (props) => {
     return (
         testID === null ?
         <UserPage pageTitle="Pick an Exam">
-            {testPool.map((entry) => {
+            {testPool && testPool.map((entry) => {
                 console.log(`entry: ${JSON.stringify(entry)}`);
                 return (
                     <Button

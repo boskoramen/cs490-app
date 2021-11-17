@@ -1,27 +1,34 @@
-import React from "react";
-import { Button } from "../components/Button.js";
+import React, { useContext } from "react";
 import CodingPracticePage from "./CodingPracticePage.js";
-import { Flex } from "../components/Flex.js";
+import { Button } from "../components/Button.js";
 import { actions } from "../reducer/constants.js";
+import { generateHeaderComp } from "../util/helpers.js";
+import MasterContext from "../reducer/context.js";
+import styles from "../styles/main.scss";
 
-const headerFunction = (props, dispatch) => {
-    return (
-        <Flex width={props.width ? props.width : "1080px"} justifyContent="space-between">
-            <div>
-                {props.pageTitle}
-            </div>
-            <Button
-                onClick={() => dispatch({type: actions.setLoggedIn, value: false})}
-            >
-                Log Out
-            </Button>
-        </Flex>
-    );
-}
+const { codingPracticeTitleButton } = styles;
 
 const UserPage = (props) => {
+    const { dispatch } = useContext(MasterContext);
+    const headerComponents = props.headerComponents || [];
+
+    const LogoutButton = (props) => (
+        <Button
+            className={codingPracticeTitleButton}
+            onClick={() => dispatch({type: actions.setLoggedIn, value: false})}
+        >
+            Log Out
+        </Button>
+    );
+
     return (
-        <CodingPracticePage {...props} headerFunction={headerFunction} />
+        <CodingPracticePage
+            {...props}
+            headerComponents={[
+                ...headerComponents,
+                generateHeaderComp(LogoutButton),
+            ]}
+        />
     );
 }
 

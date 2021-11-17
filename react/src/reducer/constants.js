@@ -1,6 +1,7 @@
 export const actions = {
+    clearRedirectTo: 'clearRedirectTo',
     setLoggedIn: 'setLoggedIn',
-    setExamID: 'setExamID',
+    seeTests: 'seeTests',
     setTestID: 'setTestID',
 };
 

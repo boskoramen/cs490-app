@@ -7,7 +7,6 @@ import cookie from "react-cookies";
 import { actions } from "./reducer/constants";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import UserPageHandler from "./page_handlers/UserPageHandler";
-import ExamPickerPageHandler from "./page_handlers/ExamPickerPageHandler";
 import LoginPageHandler from "./page_handlers/LoginPageHandler";
 import RegistrationPageHandler from "./page_handlers/RegistrationPageHandler";
 import CreateQuestionPageHandler from "./page_handlers/CreateQuestionPageHandler";
@@ -54,9 +53,6 @@ const Master = () => {
                     </Route>
                     <Route path="/create_exam">
                         <CreateExamPageHandler />
-                    </Route>
-                    <Route path="/exam_picker">
-                        <ExamPickerPageHandler />
                     </Route>
                     <Route path="/take_exam">
                         <TakeExamPageHandler />
