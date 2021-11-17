@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import UserPage from "./UserPage";
 import { Input } from "../components/Input";
+import { Textbox } from "../components/Textbox";
 import { queryServer } from "../util/helpers";
 import { Button } from "../components/Button";
 import { Flex } from "../components/Flex";
@@ -61,11 +62,11 @@ const CreateQuestionPage = (props) => {
         <Redirect to="/"/>
         : <UserPage pageTitle="Create a Question" {...props}>
             <Flex flexDirection="column">
-                {errorMessage && 
-                    <Box 
+                {errorMessage &&
+                    <Box
                         padding={20}
                         borderStyle="solid"
-                        borderWidth="2px" 
+                        borderWidth="2px"
                         borderColor="red"
                         color="red"
                         fontStyle="italic"
@@ -76,8 +77,7 @@ const CreateQuestionPage = (props) => {
                 <div>
                     Question Prompt:
                 </div>
-                <Input
-                    type="textbox"
+                <Textbox
                     value={prompt}
                     onChange={setPrompt}
                 />
@@ -120,15 +120,11 @@ const CreateQuestionPage = (props) => {
                 </div>
                 <Input
                     type="checkbox"
-                    onChange={(value) => {
-                        console.log(`value for checkbox: ${value}`);
-                    }}
                 />
                 <div>
                     Input Cases (separate each set of input with a newline):
                 </div>
-                <Input
-                    type="textbox"
+                <Textbox
                     value={inputCases.join('\n')}
                     onChange={(inputs) => {
                         setInputCases(inputs.split('\n'));
@@ -137,8 +133,7 @@ const CreateQuestionPage = (props) => {
                 <div>
                     Output Cases (separate each set of output with a newline):
                 </div>
-                <Input
-                    type="textbox"
+                <Textbox
                     value={outputCases.join('\n')}
                     onChange={(outputs) => {
                         setOutputCases(outputs.split('\n'));

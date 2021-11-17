@@ -17,9 +17,9 @@ export const Input = (props) => {
     } else if(props.isPassword) {
         type = 'password';
     }
-    
+
     return (
-        type === "textbox" ? 
+        type === "textbox" ?
         <textarea
             value={value}
             onChange={(e) => {
@@ -30,7 +30,7 @@ export const Input = (props) => {
                 }
             }}
             onFocus={(e) => {
-                setFocused(true);                  
+                setFocused(true);
             }}
             onBlur={(e) => {
                 setFocused(false);
@@ -41,18 +41,20 @@ export const Input = (props) => {
                 type={type}
                 value={value}
                 onChange={(e) => {
-                    const target = e.target.value;                    
+                    const target = e.target.value;
                     const onChange = props.onChange;
-                    console.log(`on change: \"${target}\"`);
                     if(onChange) {
                         onChange(target);
                     }
                 }}
                 onClick={(e) => {
-                    console.log('on click')
+                    const onClick = props.onClick;
+                    if(onClick) {
+                        onClick();
+                    }
                 }}
                 onFocus={(e) => {
-                    setFocused(true);               
+                    setFocused(true);
                 }}
                 onBlur={(e) => {
                     setFocused(false);

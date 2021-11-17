@@ -3,10 +3,10 @@ import axios from "axios";
 import https from "https";
 
 /**
- * 
+ *
  * @param {Object} props The props Object passed to functional React components
  * @param {Array} validProps Array of properties that will be copied over from props (if they exist) to the styles Object
- * @returns 
+ * @returns
  */
 export const parseProps = (props, validProps) => {
     let style = {};
@@ -16,10 +16,6 @@ export const parseProps = (props, validProps) => {
         }
     }
     return style;
-};
-
-export const objIsEmpty = (obj) => {
-    return obj && Object.keys(obj).length === 0;
 };
 
 export const queryServer = (useCase, data, successCallback, errorCallback) => {
@@ -43,3 +39,11 @@ export const queryServer = (useCase, data, successCallback, errorCallback) => {
             return errorCallback(error);
     });
 };
+
+var headerCompCount = 0;
+export const generateHeaderComp = (component) => {
+    return {
+        component,
+        key: headerCompCount++,
+    };
+}
