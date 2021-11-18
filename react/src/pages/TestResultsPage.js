@@ -87,15 +87,49 @@ const TestResultsPage = (props) => {
                                 key={testCase}
                                 backgroundColor="gray"
                             >
-                                <Box
+                                <Flex
+                                    flexDirection="column"
                                 >
-                                    Test Case {testCase}:
-                                </Box>
-                                <Box
-                                    backgroundColor="beige"
-                                >
-                                    {testCaseData.test_case[testCase].score}
-                                </Box>
+                                    <Box
+                                    >
+                                        Test Case {testCase}:
+                                    </Box>
+                                    <Box
+                                        backgroundColor="beige"
+                                    >
+                                        {testCaseData.test_case[testCase].score}
+                                    </Box>
+                                    <Flex>
+                                        <Box>
+                                            Input:
+                                        </Box>
+                                        <Box
+                                            backgroundColor="beige"
+                                        >
+                                            {testCaseData.test_case[testCase].input}
+                                        </Box>
+                                    </Flex>
+                                    <Flex>
+                                        <Box>
+                                            Expected Output:
+                                        </Box>
+                                        <Box
+                                            backgroundColor="beige"
+                                        >
+                                            {testCaseData.test_case[testCase].expected_output}
+                                        </Box>
+                                    </Flex>
+                                    <Flex>
+                                        <Box>
+                                            Actual Output:
+                                        </Box>
+                                        <Box
+                                            backgroundColor="beige"
+                                        >
+                                            {testCaseData.test_case[testCase].function_output}
+                                        </Box>
+                                    </Flex>
+                                </Flex>
                             </Flex>
                         );
                     })}

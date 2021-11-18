@@ -87,7 +87,7 @@ const RightPanel = () => {
         difficultyPool, difficultySelection,
         topicPool, topicSelection,
         questionPool, filteredQuestionPool,
-        questions, newQuestionValue
+        questions, search
     } = localState;
 
     return (
@@ -128,6 +128,18 @@ const RightPanel = () => {
                         topicPool?.map((entry) => ({value: entry, label: entry}))
                     }
                 />
+                <Box>
+                    Search:
+                </Box>
+                <Input
+                    value={search}
+                    onChange={(value) => {
+                        setLocalState({
+                            ...localState,
+                            search: value,
+                        });
+                    }}
+                />
                 <Flex>
                     <Button
                         onClick={() => {
@@ -141,6 +153,9 @@ const RightPanel = () => {
                                     if(difficultySelection && question.difficulty != difficultySelection.value) {
                                         return false;
                                     } else if(topicSelection && question.topic !== topicSelection.value) {
+                                        return false;
+                                    }
+                                    if(!question.name.match(new RegExp(search))) {
                                         return false;
                                     }
                                     return true;
@@ -258,6 +273,7 @@ const CreateExamPage = (props) => {
         difficultySelection: null,
         topicPool: null,
         topicSelection: null,
+        search: '',
         questions: [],
         success: false,
     });

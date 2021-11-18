@@ -11,7 +11,7 @@ import { Button } from "../components/Button";
 import "ace-builds/src-noconflict/mode-python";
 
 const TakeExamPage = (props) => {
-    const { state, dispatch } = useContext(MasterContext);
+    const { state } = useContext(MasterContext);
     const { examID } = state;
     const [ localState, setLocalState ] = useState({
         questionPool: null,
@@ -91,6 +91,9 @@ const TakeExamPage = (props) => {
                 }
                 <div>
                     {currentQuestion.name}
+                </div>
+                <div>
+                    Points: {currentQuestion.point_value}
                 </div>
                 <AceEditor
                     mode="python"

@@ -17,6 +17,7 @@ const InstructorPage = (props) => {
         exams: [],
         checkedExams: false,
     });
+    console.log('instructor page');
     const { exams, checkedExams } = localState;
     const history = useHistory();
 
