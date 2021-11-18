@@ -72,9 +72,6 @@ const InstructorPage = (props) => {
                 <Link to="/create_question">
                     Create Question
                 </Link>
-                <Link to="/exam_picker">
-                    Review Exam
-                </Link>
             </Flex>
         </UserPage>
     );
