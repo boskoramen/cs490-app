@@ -18,47 +18,39 @@ export const Input = (props) => {
         type = 'password';
     }
 
+    const newProps = {
+        value,
+        onChange: (e) => {
+            const target = e.target.value;
+            const onChange = props.onChange;
+            if(onChange) {
+                onChange(target);
+            }
+        },
+        onClick: (e) => {
+            const onClick = props.onClick;
+            if(onClick) {
+                onClick();
+            }
+        },
+        onFocus: (e) => {
+            setFocused(true);
+        },
+        onBlur: (e) => {
+            setFocused(false);
+        },
+    }
+
     return (
         type === "textbox" ?
         <textarea
-            value={value}
-            onChange={(e) => {
-                const target = e.target.value;
-                const onChange = props.onChange;
-                if(onChange) {
-                    onChange(target);
-                }
-            }}
-            onFocus={(e) => {
-                setFocused(true);
-            }}
-            onBlur={(e) => {
-                setFocused(false);
-            }}
+            {...newProps}
         /> :
         <Box>
             <input
+                {...newProps}
                 type={type}
-                value={value}
-                onChange={(e) => {
-                    const target = e.target.value;
-                    const onChange = props.onChange;
-                    if(onChange) {
-                        onChange(target);
-                    }
-                }}
-                onClick={(e) => {
-                    const onClick = props.onClick;
-                    if(onClick) {
-                        onClick();
-                    }
-                }}
-                onFocus={(e) => {
-                    setFocused(true);
-                }}
-                onBlur={(e) => {
-                    setFocused(false);
-                }}
+                checked={props.checked}
             />
         </Box>
     );

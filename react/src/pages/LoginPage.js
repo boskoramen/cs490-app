@@ -36,7 +36,7 @@ const LoginPage = (props) => {
 				setErrorMessage("Invalid username and password credentials passed!");
 		}
 	};
-	
+
 	const handleError = (error) => {
 		if(error.request) {
 			setErrorMessage("Unable to communicate with server!");
@@ -47,11 +47,11 @@ const LoginPage = (props) => {
     return (
 		<CodingPracticePage {...props} pageTitle="Login">
 			<Flex flexDirection="column" width={300}>
-				{errorMessage && 
-				<Box 
+				{errorMessage &&
+				<Box
 					padding={20}
 					borderStyle="solid"
-					borderWidth="2px" 
+					borderWidth="2px"
 					borderColor="red"
 					color="red"
 					fontStyle="italic"
@@ -72,19 +72,18 @@ const LoginPage = (props) => {
 					value={password}
 					onChange={setPassword}
 				/>
-				<Button 
+				<Button
 					onClick={() => {
 						queryServer('login', {
-							name: username, 
+							name: username,
 							pass: password
 						}, handleLogin, handleError);
 					}}
-					width={150}
 				>
 					Log In
 				</Button>
-				<a 
-					href="" 
+				<a
+					href=""
 					onClick={(e) => {
 						e.preventDefault();
 						const history = useHistory();

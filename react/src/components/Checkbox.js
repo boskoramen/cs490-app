@@ -6,6 +6,7 @@ export const Checkbox = (props) => {
         <Input
             {...props}
             type="checkbox"
+            checked={props.checked}
         />
     );
 }
