@@ -1,48 +1,99 @@
 const bodyParser = require("body-parser");
 const express = require("express");
 var cors = require('cors');
-var mysql = require('mysql');
 var crypto = require('crypto');
 const max = 10000;
 var sessions = {};
 const fs = require('fs');
 var path = './temp/temp.py';
-var spawn = require("child_process").spawn;
+var spawnSync = require("child_process").spawnSync;
+var mysqlsync = require('sync-mysql');
+
+var uint8arrayToString = function(data){
+    return String.fromCharCode.apply(null, data);
+};
 
 //connection for SQL server
-var connection = mysql.createConnection({
+
+var connectionsync = new mysqlsync({
 host     : '127.0.0.1',
 user     : 'root',
 password : 'vvrFWUsgnuG4',
 database : 'CS490_ExamDB'
 });
 
-/*
-//Used to make salts "a_salt = makeid(20);"
-function makeid(length) {
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	var charactersLength = characters.length;
-	for ( var i = 0; i < length; i++ ) {
-		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+function DBget(column, table, where)
+{
+	console.log("SELECT " + column + " FROM " + table);
+	if (where != undefined)
+	{
+		console.log("WHERE " + where);
+		return connectionsync.query("SELECT " + column + " FROM " + table + " WHERE " + where);
+	} else
+	{
+		return connectionsync.query("SELECT " + column + " FROM " + table);
 	}
-	return result;
 }
-*/
 
-//const https = require('https');
-//const http = require('http');
-//const fs = require('fs');
-//const concat = require('concat-stream');
-//const qs = require('querystring');
+function DBset(table, values)
+{
+	console.log("INSERT INTO " + table + " VALUES (" + values + ")");
+	return connectionsync.query("INSERT INTO " + table + " VALUES (" + values + ")");
+}
 
-/*
-const options = {
-	key: fs.readFileSync('key.pem'),
-	cert: fs.readFileSync('cert.pem')
-	//json:true
-};
-*/
+function DBchange(table, set, where)
+{
+	console.log("UPDATE " + table + " SET " + set);
+	if (where != undefined)
+	{
+		console.log(" WHERE " + where);
+		return connectionsync.query("UPDATE " + table + " SET " + set + " WHERE " + where);
+	} else
+	{
+		return connectionsync.query("UPDATE " + table + " SET " + set);
+	}
+}
+
+function calculate_grade(score_list, constraint_list, this_test, question_id_list, exam_id)
+{
+	if (score_list.length != constraint_list.length || constraint_list.length != question_id_list)
+	{
+		console.log("WARNING!!!\tscore_list, constraint_list, and question_id_list are mismatched");
+		console.log("score_list = " + score_list);
+		console.log("score_list.length = " + score_list.length);
+		console.log("constraint_list = " + constraint_list);
+		console.log("constraint_list.length = " + constraint_list.length);
+		console.log("question_id_list = " + question_id_list);
+		console.log(question_id_list);
+		console.log("question_id_list.length = " + question_id_list.length);
+	}
+	let raw_score = 0;
+	let total_score = 0;
+	console.log("number of questions: " + score_list.length);
+	console.log("score array: " + score_list);
+	console.log(score_list);
+	for (let i = 0; i < score_list.length; i++)
+	{
+		this_score = score_list[i];
+		let base_score = this_score.slice(1 + constraint_list[i], this_score.length).match(/1/g)?.length;
+		if (base_score == null)
+		{
+			base_score = 0
+		}
+		console.log("base_score is " + base_score);
+		let constraint_score = this_score.slice(0, 1 + constraint_list[i]).match(/0/g)?.length;
+		let test_case_score = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
+			exam_id)[0].point_value / this_score.slice(1 + constraint_list[i], this_score.length).length;
+		raw_score += (base_score - constraint_score) * test_case_score;
+		total_score += (this_score.slice(1 + constraint_list[i], this_score.length).length) * test_case_score;
+		console.log("raw_score during: " + raw_score);
+		console.log("total_score during: " + total_score);
+		DBchange("test_answer", "exam_points = " + (base_score - constraint_score) * test_case_score + ", question_id = " + question_id_list[i] + " AND test_id = " + this_test);
+	}
+	console.log("raw_score after all questions: " + raw_score);
+	console.log("total_score after all questions: " + total_score);
+	DBchange('test', 'percentage_score = ' + raw_score/total_score + ', raw_score = ' + raw_score, 'test_id = ' + this_test);
+}
 
 //express and settings for various parts of express
 var app = express();
@@ -58,345 +109,35 @@ app.use(cors({
 }));
 
 //main body of code, what to do when recieving packets
-app.use('/', function (req, res) {
+app.use('/', function (req, res)
+{
 	console.log(req.body);
 	data = req.body;
 	res.setHeader('Access-Control-Allow-Origin', req.headers.origin);
 	res.setHeader('Access-Control-Allow-Credentials', 'true');
 	res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-	
-	
-	// Check if they have a session ID and if valid sign them in
-	if (data.sesID != null)
+
+	if (data.use == 'login')
 	{
-		console.log("COOKIECAT! It's a treat for your tummy!");
-		//console.log(data.cookies);
-		if (sessions[data.sesID] != null && sessions[data.sesID].ip == req.ip && sessions[data.sesID].id == data.id)
+		if (data.sesID != null)
 		{
-			console.log("COOKIECAT! It's super duper yummy!");
-			if (data.use == 'question')
-			{//if want to make a question
-				console.log("Riddle me this batman!");
-				connection.query("SELECT question_id FROM question WHERE name = '" + data.name + "' AND function_name = '" + data.funcname +
-					"' AND function_parameters = '" + data.funcparm + "' AND " + "instructor_id = " + data.id, function (error, results, fields)
-				{
-					if (error) throw error;
-					console.log('I hold all the answers, but am seen by none, what am I?');
-					if (results.length == 0)
-					{
-						connection.query("INSERT INTO question (name, function_name, function_parameters, instructor_id) VALUES ('" +
-							data.name + "', '" + data.funcname + "', '" + data.funcparm + "', " + data.id + ")"/*" WHERE NOT EXISTS (SELECT 1 FROM " +
-							"question WHERE name = '" + data.name + "' AND function_name = '" + data.funcname + "' AND function_parameters = '" +
-							data.funcparm + "' AND " + "instructor_id = " + data.id + ")"*/, function (error, results2, fields)//comment doesnt work?
-						{//insert question into DB
-							if (error) throw error;
-							console.log("A database you say!?!");
-							connection.query("SELECT question_id FROM question WHERE name = '" + data.name + "' AND function_name = '"
-								+ data.funcname + "' AND function_parameters = '" + data.funcparm + "' AND instructor_id = " + data.id,
-								function (error, results1, fields)
-							{
-								if (error) throw error;
-								console.log("You've foiled me again batman!");
-								res.send(results1);
-							});
-						});
-					} else
-					{
-						res.send(results);
-					}
-				});
-			} else if (data.use == 'get_question')
-			{//if want to get all questions
-				console.log("Gotta catch 'em all");
-				if (data.instructor_id != null)
-				{
-					connection.query("SELECT * FROM question WHERE instructor_id = " + data.instructor_id, function (error, results, fields)
-					{
-						if (error) throw error;
-						console.log('Nevermind');
-						res.send(results);
-					});
-				} else
-				{
-					connection.query('SELECT * FROM question', function (error, results, fields)
-					{
-						if (error) throw error;
-						console.log('Pokémon');
-						res.send(results);
-					});
-				}
-			/*
-			} else if (data.use == 'test_case')
-			{//add a test case
-				console.log('Baka to test');
-				connection.query('INSERT INTO test_case (question_id, input, expected_output) VALUES (' + data.question_id
-					+ "', '" + data.input + "', " + data.ouput, function (error, results, field)
-				{//insert test case into DB using retrieved question ID and given test case data
-					if (error) throw error;
-					console.log('Was an incredibly average anime');
-					res.send(data.input);
-				});
-			*/
-			} else if (data.use == 'exam')
-			{//make an exam
-				console.log('9x - 7i < 3(3x - 7u)');
-				connection.query("SELECT 1 FROM exam WHERE name = '" + data.name + "' AND instructor_id = " + data.id,
-					function (error, results2, fields)
-				{
-					if (error) throw error;
-					if (results2.length == 0)
-					{
-						connection.query("INSERT INTO exam (name, instructor_id) " + /*"OUTPUT inserted.exam_id " + */"VALUES ('" + data.name +
-						"', " + data.id + ")", function (error, results, fields)
-						{
-							if (error) throw error;
-							console.log('i <3 u');
-							connection.query("SELECT exam_id FROM exam WHERE name = '" + data.name + "' AND instructor_id = " + data.id,
-								function (error, results1, fields)
-							{
-								if (error) throw error;
-								res.send(results1);
-							});
-						});
-					} else
-					{
-						res.send('bad attempt');
-					}
-				});
-			} else if (data.use == 'get_exam')
-			{//get all related questions to an exam
-				connection.query('SELECT * FROM exam', function (error, results, field)
-				{
-					if (error) throw error;
-					console.log("Don't even know what to put here");
-					res.send(results);
-				});
-			} else if (data.use == 'get_exam_question')
+			if (sessions[data.sesID] != null && sessions[data.sesID].ip == req.ip && sessions[data.sesID].id == data.id)
 			{
-				connection.query('SELECT question_id FROM exam_question WHERE exam_id = ' + data.exam_id, function (error, results,
-					field)
-				{
-					if (error) throw error;
-					res.send(results);
-				});
-			} else if (data.use == 'get_question_id')
-			{
-				connection.query('SELECT * FROM question WHERE question_id = ' + data.question_id, function (error, results,
-					field)
-				{
-					if (error) throw error;
-					res.send(results[0]);
-				});
-			} else if (data.use == 'get_test_case')
-			{
-				connection.query('SELECT * FROM test_case WHERE question_id = ' + data.question_id, function (error, results,
-					field)
-				{
-					if (error) throw error;
-					res.send(results);
-				});
-			} else if (data.use == 'get_exam_inst_id')
-			{
-				connection.query('SELECT * FROM exam WHERE instructor_id = ' + data.instructor_id, function (error, results,
-					field)
-				{
-					if (error) throw error;
-					res.send(results);
-				});
-			} else if (data.use == 'get_all_exam')
-			{
-				connection.query('SELECT * FROM exam' + data.instructor_id, function (error, results, field)
-				{
-					if (error) throw error;
-					res.send(results);
-				});
-			} else if (data.use == 'add_question_exam')
-			{
-				connection.query('INSERT INTO exam_question (question_id, point_value, exam_id) VALUES (' + data.question_id +
-					', ' + data.point_value + ', ' + data.exam_id + ')', function (error, results, field)
-				{
-					if (error) throw error;
-					res.send(data.question_id);
-				});
-			} else if (data.use == 'start_test')
-			{
-				connection.query('INSERT INTO test (student_id, exam_id) VALUES (' + data.id + ', ' + data.exam_id + ')',
-					function (error, results, field)
-				{
-					if (error) throw error;
-					connection.query('SELECT test_id FROM test WHERE student_id = ' + data.id + ' AND exam_id = ' + data.exam_id,
-						function (error, results1, fields)
-					{
-						if (error) throw error;
-						res.send(results1[0]);
-					});
-				});
-			} else if (data.use == 'answer')
-			{//TODO-------------------------------------------------------------------------------------------------------------
-			//NEED TO ADD SIMPLE GRADING AT THIS POINT--------------------------------------------------------------------------
-			//------------------------------------------------------------------------------------------------------------------
-			//HOWTO RUN PYTHON FROM JS?-----------------------------------------------------------------------------------------
-			//------------------------------------------------------------------------------------------------------------------
-			//Change insert statement to add simple graded score, will likely need to pull all needed info from DB... quite a
-			//few pulls I think... test cases, exam question info for scoring info
-				connection.query('INSERT INTO test_answer (test_id, exam_question_id) VALUES (' + data.test_id + ', ' +
-					data.exam_question_id + ')', function (error, results, field)
-				{
-					if (error) throw error;
-					res.send(data.test_id);
-				});
-			} else if (data.use == 'get_test')
-			{
-				connection.query('SELECT * FROM test_answer WHERE student_id = ' + data.student_id + ' AND exam_id = ' +
-					data.exam_id, function (error, results, fields)
-				{
-					if (error) throw error;
-					res.send(results);
-				});
-			} else if (data.use == 'get_student')
-			{
-				connection.query('SELECT id FROM login WHERE usertype = student', function (error, results, fields)
-				{
-					if (error) throw error;
-					res.send(results);
-				});
-			} else if (data.use == 'review')
-			{
-				connection.query('INSERT INTO test_review (test_id, percentage_score, raw_score, instructor_id, release) ' +
-					'VALUES (' + data.test_id + ', ' + data.p_score + ', ' + data.raw_score + ', ' + data.id + ', ' + data.release +
-					')', function (error, results, fields)
-				{
-					if (error) throw error;
-					res.send(data.p_score);
-				});
-			} else if (data.use == 'get_review')
-			{
-				connection.query('SELECT * FROM test_review WHERE test_id = ' + data.test_id, function(error, results, fields)
-				{
-					if (error) throw error;
-					res.send(results);
-				});
-			} else if (data.use == 'add_many_question_exam')
-			{
-				console.log("there once was a man from nantucket");
-				data.question_list.forEach(function (this_question)
-				{
-					console.log("Who kept all his cash in a bucket");
-					connection.query("SELECT 1 FROM exam_question WHERE question_id = " + this_question.question_id + " AND point_value = " + 
-						this_question.point_value + " AND exam_id = " + data.exam_id, function (error, results1, fields)
-					{
-						if (error) throw error;
-						console.log("But his doughter named Nan");
-						if (results1.length == 0)
-						{
-							console.log("Ran away with a man");
-							connection.query('INSERT INTO exam_question (question_id, point_value, exam_id) VALUES (' +
-								this_question.question_id + ', ' + this_question.point_value + ', ' + data.exam_id + ')',
-								function (error, results, field)
-							{
-								if (error) throw error;
-								console.log("And as for the bucket, Nantucket");
-								//console.log(results);//what does DB return anyway?
-							});
-						}
-					});
-				});
-				res.send(data.question_list.length.toString());
-			} else if (data.use == 'many_test_case')
-			{//add a test case
-				console.log('Baka to test');
-				data.test_case_list.forEach(function (this_case)
-				{
-					connection.query('INSERT INTO test_case (question_id, input, expected_output) VALUES (' + this_case.questionID
-						+ ", '" + this_case.input + "', '" + this_case.output + "')", function (error, results, field)
-					{//insert test case into DB using retrieved question ID and given test case data
-						if (error) throw error;
-						console.log('Was an incredibly average anime');
-					});
-				});
-				res.send(data.test_case_list.length.toString());
-			} else if (data.use == 'add_many_answer')
-			{
-				console.log("So I met this guy the other day");
-				connection.query("SELECT 1 FROM test_answer WHERE test_id = " + data.test_id, function (error, results, fields)
-				{
-					if (error) throw error;
-					if (results.length == 0)
-					{
-						console.log("And this creep told me he would give me 20 dollars if I sucked his dick");
-						data.answer_list.forEach(function (this_answer)
-						{
-							console.log("But he lied, it was only 10 dollars");
-							let buffer = new Buffer(this_answer.answer);
-							// open the file in writing mode, adding a callback function where we do the actual writing
-							fs.open(path, 'w', function(err, fd) {
-								if (err) {
-									throw 'could not open file: ' + err;
-								}// write the contents of the buffer, from position 0 to the end, to the file descriptor returned in opening our file
-								fs.write(fd, buffer, 0, buffer.length, null, function(err) {
-									if (err) throw 'error writing file: ' + err;
-									fs.close(fd, function() {
-										console.log('wrote the file successfully');
-									});
-								});
-							});
-							connection.query("SELECT input expected_output FROM test_case WHERE question_id = " + this_answer.question_id,
-								function (error, results1, fields)
-							{
-								if (error) throw error;
-								count = 0;
-								results1.forEach(function (testcase)
-								{
-									var process = spawn('python3',[path, testcase.input]);
-									console.log(process);
-									if (process == testcase.expected_output)
-									{
-										console.log("Last time I listen to a homeless guy behind a Wendy's");
-										count = count++;
-									}
-								});
-								score = count/results1.length;
-								connection.query('INSERT INTO test_answer (test_id, exam_question_id, score) VALUES (' + data.test_id + ', ' +
-									this_answer.question_id + ", " + score + ")", function (error, results2, fields)
-								{
-									if (error) throw error;
-								});
-							});
-						});
-					}
-				});
-			} else
-			{//not using something, likely logging in
+				console.log("successful sesID");
 				res.send(sessions[data.sesID].usertype);
+			} else
+			{
+				console.log("bad attempt");
+				res.send('bad attempt');
 			}
 		} else
 		{
-			console.log("HE LEFT HIS FAMILY BEHIND!");
-			res.send('bad attempt');
-		}
-	} else if (data.name != null)
-	{//if no sesID attempt to login
-		console.log("My name is what?");
-
-		//depracated password generator
-		/*
-		a_salt = makeid(20);
-		a_pass = crypto.pbkdf2Sync(data.pass, a_salt, 9000, 50, 'sha1');
-		console.log("password is: " + a_pass.toString('hex'));
-		console.log("salt is: " + a_salt);
-		*/
-		
-		//if no sesID attempt to login
-		connection.query("SELECT * FROM login WHERE username = '" + data.name + "'", function (error, results, fields)
-		{
-			if (error) throw error;
+			results = DBget("*", "login", "username = '" + data.name + "'");
 			if (results.length > 0) //if they exist in DB
 			{
-				console.log("My name is who");
 				if (crypto.pbkdf2Sync(data.pass, results[0].salt, 9000, 50, 'sha1').toString('hex') ==
 					results[0].passcode)
 				{//if the password matches the salted hash
-					console.log("My name is CHIKA CHIKA");
 					//create a session ID locally appended to the end of all previous session ID's
 					randy = Math.floor(Math.random() * max);
 					this_id = results[0].id;
@@ -412,19 +153,411 @@ app.use('/', function (req, res) {
 							ip: req.ip
 						},
 					}
-					console.log("SLIM SHADY!");
 					//res.cookie("sesID", randy);//send session ID to user as cookie
-					console.log("Cookiecat: " + randy);//It's a treat for your tummy
+					console.log("Sucessful login, sesID: " + randy);//It's a treat for your tummy
 					res.send(results[0].usertype + ';' + randy + ';' + results[0].id);//send relevant login data
 					//currently usertype for frontend use seesion id num and userid num for future use
 				} else
 				{
+					console.log("bad attempt");
 					res.send("bad attempt");
 				}
 			} else
 			{
+				console.log("bad attempt");
 				res.send("bad attempt");
 			}
+		}
+
+
+	} else if (data.use == 'question')
+	{//if want to make a question
+		console.log("Making question name = '" + data.name + "' AND function_name = '" + data.funcname +
+			"' AND function_parameters = '" + data.funcparm + "' AND " + "instructor_id = " + data.id );
+		results = DBget("question_id", "question", "name = '" + data.name + "' AND function_name = '" + data.funcname +
+			"' AND function_parameters = '" + data.funcparm + "' AND " + "instructor_id = " + data.id + " AND topic = '" + data.topic + 
+			"' AND difficulty = '" + data.difficulty + "' AND constraints = '" + data.constraint + "'");
+		if (results.length == 0)
+		{//if no duplicates
+			console.log("No duplicates found");
+			a_check = data.funcparm.split(',');
+			for (let i = 0; i < a_check.length; i++)
+			{
+				a_check[i] = a_check[i].trim().replace(/\s+/g, ' ').split(' ')
+			}
+			let BreakException = {};
+			try
+			{
+				a_check.forEach(function (this_param)
+				{
+					console.log("this_param is :" + this_param);
+					if (this_param.length != 2)
+					{
+						throw BreakException;
+					}
+				});
+				results2 = DBset("question (name, function_name, function_parameters, instructor_id, topic, difficulty, constraints)", "'" +
+					data.name + "', '" + data.funcname + "', '" + data.funcparm + "', " + data.id + ", '" + JSON.stringify(data.topic) + "', '"
+					+
+					JSON.stringify(data.difficulty) + "', '" + data.constraint + "'");
+				results1 = DBget("question_id", "question", "name = '" + data.name + "' AND function_name = '" + data.funcname +
+					"' AND function_parameters = '" + data.funcparm + "' AND instructor_id = " + data.id + " AND topic = '" +
+					JSON.stringify(data.topic) + 
+					"' AND difficulty = '" + JSON.stringify(data.difficulty) + "' AND constraints = '" + data.constraint + "'");
+				console.log("Question with id " + results1[0].question_id + " inserted into DB");
+				res.send(results1);
+			} catch (e)
+			{
+				if (e !== BreakException) throw e;
+				res.send('bad attempt');
+			}
+		} else
+		{//send duplicate question id to user
+			console.log("Duplicate found in DB sending id " + results[0].question_id + " to client");
+			res.send(results);
+		}
+
+
+	} else if (data.use == 'get_question')
+	{//if want to get all questions
+		console.log("Retrieving questions");
+		if (data.instructor_id != null)
+		{//by instructor id
+			console.log('by instructorID');
+			res.send(DBget("*", "question", "instructor_id = " + data.instructor_id));
+		} else
+		{//all questions in database
+			console.log('all questions');
+			res.send(DBget("*", "question"));
+		}
+	} else if (data.use == 'get_an_exam')
+	{//get all related questions to an exam given an exam_id
+		exam_question = DBget("*", 'exam_question', 'exam_id = ' + data.exam_id);
+		let exam_question_list = [];
+		exam_question.forEach(function (this_question)
+		{
+			current = DBget("*", "question", "question_id = " + this_question.question_id)[0];
+
+			console.log("retreiveing question with ID " + this_question.question_id);
+			exam_question_list = 
+			[
+				...exam_question_list,
+				current
+			]
+		});
+		res.send(exam_question_list);
+	} else if (data.use == 'get_all_exam')
+	{//get all exam in DB
+		if (data.usertype == 'student')
+		{//if student is attempting to check their exams
+			results_not_taken = DBget("*", "exam", 'NOT EXISTS (SELECT * FROM test WHERE exam.exam_id = test.exam_id)');
+			results_taken = DBget("*", "test", "EXISTS (SELECT * FROM exam WHERE test.exam_id = exam.exam_id AND test.student_id = " + data.id +
+				' AND test.release = "true")');
+			total = {taken: results_taken, not_taken: results_not_taken};
+			res.send(total);
+		} else if (data.instructor_id != null)
+		{//by instructor id
+			res.send(DBget("*", "exam", 'instructor_id = ' + data.instructor_id));
+		} else
+		{//get every exam in DB
+			res.send(DBget("*", "exam"));
+		}
+	} else if (data.use == 'get_test')
+	{//get completed test from DB
+		let test_data = DBget("test.*, login.username", "test INNER JOIN login ON login.id = test.student_id", "exam_id = " +
+			data.exam_id);
+		for (let i = 0; i < test_data.length; i++)
+		{
+		    const test_answer_data = DBget("test_answer.*, question.name, question.constraints, exam_question.point_value",
+						 "test_answer INNER JOIN question INNER JOIN exam_question ON test_answer.question_id = question.question_id AND " +
+						   "test_answer.question_id = exam_question.question_id", "test_id = " + test_data[i].test_id);
+		    console.log(`test_answer_data:\n${test_answer_data}`);
+		    test_data[i].test_answer_data = test_answer_data;
+		}
+		res.send(test_data);
+	} else if (data.use == 'get_test_answer')
+	{
+		res.send(DBget("*", "test_answer", "test_id = " + data.test_id));
+	} else if (data.use == 'get_student')
+	{
+		res.send(DBget("*", "login", "usertype = 'student'"));
+	} else if (data.use == 'review')
+	{
+		let constraint_list = [];
+		let score_list = [];
+		let question_id_list = []
+		data.answer_list.forEach(function (this_answer)
+		{
+			DBchange('test_answer', "review = '" + this_answer.review.replace("'", "\'") + "', score = '" + this_answer.score.replace("'", "\'")
+				+ "', test_case_score = " + data.test_case_score, " test_answer_id = " + this_answer.test_answer_id);
+			if (this_answer.constraints.length > 0)
+			{
+				constraint_list.push(this_answer.constraints.match(",") + 1);
+			} else
+			{
+				constraint_list.push(0);
+			}
+			score_list.push(this_answer.score);
+			question_id_list.push(DBget("question_id", "test_answer", "test_answer_id = " + this_answer.test_answer_id)[0].question_id);
+		});
+		calculate_grade(score_list, constraint_list, data.test_id, question_id_list,
+			DBget("exam_id", "test", "test_id = " + data.test_id)[0].exam_id);
+		
+	} else if (data.use == 'release')
+	{
+		data.test_list.forEach(function (this_test)
+		{
+			DBchange("test", "reease = 'true'", "test_id = " + this_test.test_id);
+		});
+		res.send(data.test_list.length.toString());
+	} else if (data.use == 'get_review')
+	{
+		if (data.test_id != null)
+		{
+			results = DBget("*", "test_review", "test_id = " + data.test_id);
+			res.send(results);
+		} else
+		{
+			DBget('*', 'test_review');
+			res.send(results);
+		}
+	} else if (data.use == 'exam')
+	{//creating an exam
+		let success = 1;
+		data.question_list.forEach(function (this_question)
+		{
+			if (DBget(1, 'question', 'question_id = ' + this_question.question_id).length == 0)
+			{
+				success = 0;
+			}
+		});
+		if (success == 1)
+		{
+			DBset('exam (name, instructor_id)', "'" + data.name + "', " + data.id);
+			exam_id = DBget("exam_id", 'exam', "name = '" + data.name + "'")[0].exam_id;
+			console.log("created empty exam with stringified id: " + JSON.stringify(exam_id));
+			console.log("created empty exam with id: " + exam_id);
+			data.question_list.forEach(function (this_question)
+			{
+				DBset('exam_question (question_id, point_value, exam_id)', this_question.question_id + ", " + this_question.point_value +
+					", " + exam_id);
+			});
+			res.send(exam_id.toString());
+		} else
+		{
+			res.send("bad attempt");
+		}
+	} else if (data.use == 'many_test_case')
+	{//add a test case
+		console.log('Creating test case(s)');
+		data.test_case_list.forEach(function (this_case)
+		{
+			DBset('test_case (question_id, input, expected_output)', this_case.questionID + ", '" +
+				this_case.input.replace(/'/gm, "\\'") + "', '" + this_case.output.replace(/'/gm, "\\'") + "'");
+			console.log('Test case added');
+		});
+		res.send(data.test_case_list.length.toString());
+	} else if (data.use == 'add_many_answer')
+	{
+		let some_check = DBget("*", "test", "student_id = " + data.id + " AND exam_id = " + data.exam_id);
+		if (some_check.length == 0)
+		{
+			DBset("test (student_id, exam_id)", data.id + ', ' + data.exam_id);
+			let this_test = DBget("test_id", "test", 'student_id = ' + data.id + ' AND exam_id = ' + data.exam_id)[0].test_id;
+			try
+			{
+				console.log("creating student test");
+				let score = [];
+				let constraint_arr = [];
+				let question_id_list = [];
+				for (let i = 0; i < data.answer_list.length; i++)
+				//data.answer_list.forEach(function (this_answer) // this line was replaces as I need to keep index of 2 arrays (answer_list and constraint_arr)
+				{
+					let output = [];
+					this_answer = data.answer_list[i];
+					question_id_list.push(this_answer.question_id);
+					results1 = DBget("*", "test_case", "question_id = " + this_answer.question_id);
+					console.log("there are: " + results1.length + " test cases");
+					question = DBget("*", "question", "question_id = " + this_answer.question_id);
+					let these_params = question[0].function_parameters.split(',');
+					for (let i = 0; i < these_params.length; i++)
+					{
+						these_params[i] = these_params[i].trim().replace(/\s+/g, ' ').split(' ')
+					}
+					let count = '';
+					let regex = new RegExp("def\\s+" + question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\(");
+					console.log("using regex: " + regex + " to find the function definition");
+					console.log("def\\s+" + question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\(");
+					if (this_answer.answer.match(regex))
+					{
+						count = count + 1;
+					} else
+					{
+						count = count + 0;
+						this_answer.answer.replace(regex, 'def ' + question[0].function_name + '(');
+					}
+					let constraints = question[0].constraints.split(',');
+					constraint_arr.push(0);
+					let constraint_names = [];
+					if (constraints[0] != "")
+					{
+						let constraint_answer = this_answer.answer.replace(regex, '');
+						constraints.forEach(function (this_constraint)
+						{
+							console.log("this_constraint is: " + this_constraint);
+							console.log(this_constraint);
+							constraint_arr[i] = constraint_arr[i] + 1; // still paranoid that ++ doesnt work
+							constraint_names.push(this_constraint);
+							if (this_constraint == "recursion")
+							{
+								if (constraint_answer.match(question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')) == null)
+								{
+									count = count + 0;
+								} else
+								{
+									count = count + 1;
+								}
+							} else
+							{
+								if (constraint_answer.match(this_constraint) == null)
+								{
+									count = count + 0;
+								} else
+								{
+									count = count + 1;
+								}
+							}
+						});
+					}
+					let modified_answer = "import sys\n" + this_answer.answer.replace(/\t/gm, "    ") + "\nprint(" + question[0].function_name +
+						"(";
+					for (let i = 1; i <= question[0].function_parameters.split(',').length; i++)
+					{
+						console.log("these_params is: " + these_params);
+						console.log(these_params);
+						modified_answer = modified_answer + these_params[i - 1][0] + "(sys.argv[" + i + "])";
+						if (i != (question[0].function_parameters.match(/,/g) || []).length + 1)
+						{
+							modified_answer = modified_answer + ", ";
+						}
+					}
+					modified_answer = modified_answer + '))\n';
+					console.log("modified answer = " + modified_answer);
+					let buffer = new Buffer.from(modified_answer, "utf-8");
+					// open the file in writing mode, adding a callback function where we do the actual writing
+					fd = fs.openSync(path, 'w');
+					fs.writeSync(fd, buffer, 0, buffer.length, null);
+					fs.closeSync(fd);
+					results1.forEach(function (testcase)
+					{
+						temp = [path, ...testcase.input.split(' ')];
+						console.log("calling function as: " + temp);
+						console.log(temp);
+						let process = spawnSync('python3', temp);
+						data1 = uint8arrayToString(process.stdout).trim();
+						output.push(data1);
+						console.log("function returned with: " + data1);
+						console.log("function was required to return: " + testcase.expected_output);
+						if (data1 == testcase.expected_output)
+						{
+							count = count + 1;
+						} else
+						{
+							count = count + 0;
+						}
+					});
+					console.log('binary string of current questions "score": ' + count);
+					escaped = this_answer.answer.replace(/'/gm, "\\'");
+					score.push(count);
+					let db_test_case_score = {};
+					db_test_case_score.constraints = {};
+					let test_case_score = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
+						data.exam_id)[0].point_value / count.slice(1 + constraint_arr[i], count.length).length;
+					if (count[0] == 0)
+					{
+						db_test_case_score.constraints.name = "-" + test_case_score;
+					} else
+					{
+						db_test_case_score.constraints.name = "-0";
+					}
+					if (constraint_arr[i] != 0)
+					{
+						for (let q = 1; q <= constraint_arr[i]; q++)
+						{
+							if (count[q] == 0)
+							{
+								db_test_case_score["constraints"][constraint_names[q - 1]] = "-" + test_case_score;
+							} else
+							{
+								db_test_case_score["constraints"][constraint_names[q - 1]] = "-0";
+							}
+						}
+					}
+					db_test_case_score.test_case = {};
+					for (let q = 1 + constraint_arr[i]; q < count.length; q++)
+					{
+						db_test_case_score["test_case"][q] = {};
+						db_test_case_score["test_case"][q]["input"] = results1[q - 1 - constraint_arr[i]].input;
+						db_test_case_score["test_case"][q]["expected_output"] = results1[q - 1 - constraint_arr[i]].expected_output;
+						db_test_case_score["test_case"][q]["function_output"] = output[q - 1 - constraint_arr[i]];
+						if (count[q] == 0)
+						{
+							db_test_case_score["test_case"][q]["score"] = "+0";
+						} else
+						{
+							db_test_case_score["test_case"][q]["individual_score"] = "+" + test_case_score;
+						}
+					}
+					db_test_case_score.test_case.score = test_case_score;
+					console.log("db_test_case_score:\n" + JSON.stringify(db_test_case_score));
+					DBset("test_answer (test_id, score, answer, question_id, test_case_score)", this_test + ", '" + count + "', '" + escaped + "', " +
+						this_answer.question_id + ", '" + JSON.stringify(db_test_case_score) + "'");
+				}//); // removed after change from foreach
+				calculate_grade(score, constraint_arr, this_test, question_id_list, data.exam_id);
+				// the following lines were original working code, currently I am unsure if calculate_grade works for this section so I am leaving the below as a guideline/backup
+				/*let raw_score = 0;
+				let total_score = 0;
+				console.log("number of questions: " + score.length);
+				console.log("score array: " + score);
+				console.log("stringified score array: " + JSON.stringify(score));
+				for (let i = 0; i < score.length; i++)
+				//score.forEach(function (this_score) // again replaced to track index of 2 arrs (score and constraint_arr)
+				{
+					this_score = score[i]
+					console.log("this score is " + this_score);
+					let temp = this_score.slice(1 + constraint_arr[i], this_score.length).match(/1/g)?.length;
+					if (temp == null)
+					{
+						temp = 0
+					}
+					console.log("temp is " + temp);
+					raw_score += temp - this_score.slice(0, 1 + constraint_arr[i]).match(/0/g)?.length;
+					total_score += this_score.slice(1 + constraint_arr[i], this_score.length).length;
+					console.log("raw_score during: " + raw_score);
+					console.log("total_score during: " + total_score);
+				}//); // removed after change from foreach
+				console.log("raw_score after all questions: " + raw_score);
+				console.log("total_score after all questions: " + total_score);
+				let percentage_score = raw_score/total_score;
+				DBchange('test', 'percentage_score = ' + percentage_score + ', raw_score = ' + raw_score, 'test_id = ' + this_test);*/
+				res.send(this_test.toString());
+			} catch (e)
+			{
+				throw e;
+				connectionsync.query("DELETE FROM test WHERE test_id = " + this_test);
+				res.send('bad attempt');
+			}
+		} else
+		{
+				console.log("bad attempt");
+				res.send("bad attempt");
+		}
+	} else if (data.use == 'delete')
+	{
+		connection.query("DELETE FROM '" + data.table + "' WHERE PRIMARY KEY = " + data.primary, function (error, results, fields)
+		{
+			if (error) throw error;
+			res.send("it's gones");
 		});
 	} else
 	{//no usecase found
@@ -435,27 +568,3 @@ app.use('/', function (req, res) {
 app.listen(9000, function() {
 	console.log("Slim Shady has been avtivated");
 })
-
-/*
-https.createServer(options, function (req, res) {
-	console.log("Recieved something");
-    var data;
-	req.on('data', (chunk) => console.log(chunk.toString()));
-    console.log('Data: ', data);
-	res.setHeader('Access-Control-Allow-Origin', '*');
-	if (data.name == "Isaiah")
-	{
-		console.log("Isaiah is here!");
-		if (data.pass == "password")
-		{
-			console.log("With the right password!");
-			res.writeHead(200);
-			res.send("hello world\n");
-		}
-	} else
-	{
-		res.writeHead(200);
-		res.send("BAD ATTEMPT");
-	}
-}).listen(9000);
-*/
