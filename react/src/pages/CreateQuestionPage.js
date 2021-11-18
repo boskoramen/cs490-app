@@ -417,6 +417,9 @@ const RightPanel = () => {
                         );
                     })}
                 </Flex>
+                <Box>
+                    Difficulty:
+                </Box>
                 <Select
                     value={difficultySelection}
                     onChange={(value) => {
