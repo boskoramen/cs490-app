@@ -81,14 +81,15 @@ function calculate_grade(score_list, constraint_list, this_test, question_id_lis
 			base_score = 0
 		}
 		console.log("base_score is " + base_score);
-		let constraint_score = this_score.slice(0, 1 + constraint_list[i]).match(/0/g)?.length;
+		let constraint_score = this_score.slice(0, 1 + constraint_list[i]).match(/0/g)?.length || 0;
 		let test_case_score = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
-			exam_id)[0].point_value / this_score.slice(1 + constraint_list[i], this_score.length).length;
+					    exam_id)[0].point_value / this_score.slice(1 + constraint_list[i], this_score.length).length;
+	    console.log(`constraint_score: ${constraint_score}`);
 		raw_score += (base_score - constraint_score) * test_case_score;
 		total_score += (this_score.slice(1 + constraint_list[i], this_score.length).length) * test_case_score;
 		console.log("raw_score during: " + raw_score);
 		console.log("total_score during: " + total_score);
-		DBchange("test_answer", "exam_points = " + (base_score - constraint_score) * test_case_score + ", question_id = " + question_id_list[i] + " AND test_id = " + this_test);
+		DBchange("test_answer", "exam_points = " + (base_score - constraint_score) * test_case_score, "question_id = " + question_id_list[i] + " AND test_id = " + this_test);
 	}
 	console.log("raw_score after all questions: " + raw_score);
 	console.log("total_score after all questions: " + total_score);
@@ -269,8 +270,8 @@ app.use('/', function (req, res)
 		for (let i = 0; i < test_data.length; i++)
 		{
 		    const test_answer_data = DBget("test_answer.*, question.name, question.constraints, exam_question.point_value",
-						 "test_answer INNER JOIN question INNER JOIN exam_question ON test_answer.question_id = question.question_id AND " +
-						   "test_answer.question_id = exam_question.question_id", "test_id = " + test_data[i].test_id);
+						   "test_answer INNER JOIN question ON test_answer.question_id = question.question_id INNER JOIN exam_question ON exam_question.question_id = question.question_id",
+						 "test_id = " + test_data[i].test_id);
 		    console.log(`test_answer_data:\n${test_answer_data}`);
 		    test_data[i].test_answer_data = test_answer_data;
 		}
@@ -289,7 +290,7 @@ app.use('/', function (req, res)
 		data.answer_list.forEach(function (this_answer)
 		{
 			DBchange('test_answer', "review = '" + this_answer.review.replace("'", "\'") + "', score = '" + this_answer.score.replace("'", "\'")
-				+ "', test_case_score = " + data.test_case_score, " test_answer_id = " + this_answer.test_answer_id);
+				+ "', ttest_case_score = " + data.test_case_score, " test_answer_id = " + this_answer.test_answer_id);
 			if (this_answer.constraints.length > 0)
 			{
 				constraint_list.push(this_answer.constraints.match(",") + 1);
@@ -358,7 +359,7 @@ app.use('/', function (req, res)
 		});
 		res.send(data.test_case_list.length.toString());
 	} else if (data.use == 'add_many_answer')
-	{
+    {
 		let some_check = DBget("*", "test", "student_id = " + data.id + " AND exam_id = " + data.exam_id);
 		if (some_check.length == 0)
 		{
@@ -505,10 +506,10 @@ app.use('/', function (req, res)
 							db_test_case_score["test_case"][q]["score"] = "+0";
 						} else
 						{
-							db_test_case_score["test_case"][q]["individual_score"] = "+" + test_case_score;
+							db_test_case_score["test_case"][q]["score"] = "+" + test_case_score;
 						}
 					}
-					db_test_case_score.test_case.score = test_case_score;
+					db_test_case_score.value = test_case_score;
 					console.log("db_test_case_score:\n" + JSON.stringify(db_test_case_score));
 					DBset("test_answer (test_id, score, answer, question_id, test_case_score)", this_test + ", '" + count + "', '" + escaped + "', " +
 						this_answer.question_id + ", '" + JSON.stringify(db_test_case_score) + "'");
