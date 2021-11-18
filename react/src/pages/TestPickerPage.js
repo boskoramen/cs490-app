@@ -6,6 +6,9 @@ import cookie from "react-cookies";
 import { Button } from "../components/Button";
 import MasterContext from "../reducer/context";
 import { actions } from "../reducer/constants";
+import styles from "../styles/main.scss";
+
+const { roundButton } = styles;
 
 const TestPickerPage = (props) => {
     const { state, dispatch } = useContext(MasterContext);
@@ -38,8 +41,9 @@ const TestPickerPage = (props) => {
             {testPool && testPool.map((entry) => {
                 return (
                     <Button
+                        className={roundButton}
                         onClick={()=>{
-                            dispatch({type: actions.setTestID, value: entry.test_id});
+                            dispatch({type: actions.reviewTest, value: entry});
                             setTestID(entry.test_id);
                         }}
                         key={entry.test_id}

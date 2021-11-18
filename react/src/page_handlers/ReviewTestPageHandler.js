@@ -7,7 +7,7 @@ import MasterContext from "../reducer/context";
 const ReviewTestPageHandler = (props) => {
     const { state } = useContext(MasterContext);
     return (
-        !state.isLoggedIn && state.userType != 'instructor' && state.testID ?
+        !state.isLoggedIn || state.userType != 'instructor' || !state.test ?
         <Redirect to="/" />
         : <ReviewTestPage />
     );

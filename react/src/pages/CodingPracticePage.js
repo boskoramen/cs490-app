@@ -1,4 +1,5 @@
 import React, { useContext } from "react";
+import { Box } from "../components/Box";
 import { Page } from "../components/Page";
 import { Flex } from "../components/Flex";
 import styles from "../styles/main.scss";
@@ -9,15 +10,16 @@ const CodingPracticePage = (props) => {
     const { dispatch } = useContext(MasterContext);
     return (
         <Page {...props}>
-            <div className={codingPracticeHeader}>
+            <Box className={codingPracticeHeader}>
                 CodingPractice
-            </div>
-            <div className={codingPracticeContents} style={{width: "100%"}}>
-                <div className={codingPracticeTitle}>
-                    <Flex justifyContent="space-between">
-                        <div className={codingPracticeTitleLabel}>
+            </Box>
+            <Box className={codingPracticeContents} style={{width: "100%"}}>
+                <Box className={codingPracticeTitle}>
+                    <Flex
+                    >
+                        <Box className={codingPracticeTitleLabel}>
                             {props.pageTitle}
-                        </div>
+                        </Box>
                         {props.headerComponents && props.headerComponents.map((elem) => {
                             const HeaderComponent = elem.component;
                             const key = elem.key;
@@ -25,11 +27,11 @@ const CodingPracticePage = (props) => {
                         })
                         }
                     </Flex>
-                </div>
-                <div className={codingPracticeBody}>
+                </Box>
+                <Box className={codingPracticeBody}>
                     {props.children}
-                </div>
-            </div>
+                </Box>
+            </Box>
         </Page>
     );
 };

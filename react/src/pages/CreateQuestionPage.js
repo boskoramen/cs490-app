@@ -123,7 +123,7 @@ const LeftPanel = () => {
                     });
                 }}
                 options={
-                    ['For', 'While', 'Recursion', 'If'].map((entry) => ({value: entry, label: entry}))
+                    ['For', 'While', 'Recursion', 'If', 'Math'].map((entry) => ({value: entry, label: entry}))
                 }
             />
             <Box>

@@ -15,7 +15,10 @@ const UserPage = (props) => {
     const LogoutButton = (props) => (
         <Button
             className={codingPracticeTitleButton}
-            onClick={() => dispatch({type: actions.setLoggedIn, value: false})}
+            onClick={() => {
+                console.log('logging out');
+                dispatch({type: actions.setLoggedIn, value: false});
+            }}
         >
             Log Out
         </Button>

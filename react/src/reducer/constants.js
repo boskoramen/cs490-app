@@ -2,7 +2,8 @@ export const actions = {
     clearRedirectTo: 'clearRedirectTo',
     setLoggedIn: 'setLoggedIn',
     seeTests: 'seeTests',
-    setTestID: 'setTestID',
+    takeExam: 'takeExam',
+    reviewTest: 'reviewTest',
 };
 
 export const initialState = {

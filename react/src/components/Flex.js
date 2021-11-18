@@ -15,13 +15,13 @@ const validProps = [
 
 export const Flex = (props) => {
     return (
-        <Box 
+        <Box
+            {...props}
             className={flexContainer}
             style={{
                 ...props.style,
                 ...parseProps(props, validProps),
             }}
-            {...props}
         />
     );
 }

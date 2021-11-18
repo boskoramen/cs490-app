@@ -1,16 +1,18 @@
 @use "flex";
 @use "pages";
 @use "create_question";
+@use "general_buttons";
 
 body {
     width: 100%;
     margin-left: 0px;
     padding-left: 0px;
     background-color: beige;
+    overflow-x: hidden;
 }
 
-div {
-    width: 100%;
-    margin-left: 0px;
-    padding-left: 0px;
+.roundButton {
+    border: 2px solid red;
+    border-radius: 5px;
+    padding: 5px;
 }
