@@ -16,7 +16,7 @@ const validProps = [
 export const Button = (props) => {
     return (
         <button
-            {...props} 
+            {...props}
             style={{
                 ...props.style,
                 ...parseProps(props, validProps),

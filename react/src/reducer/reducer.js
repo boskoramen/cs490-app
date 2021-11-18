@@ -12,8 +12,10 @@ const reducer = (state, action) => {
             return {...state, isLoggedIn: action.value, userType: action.userType};
         case actions.seeTests:
             return {...state, examID: action.value};
-        case actions.setTestID:
-            return {...state, testID: action.value};
+        case actions.takeExam:
+            return {...state, examID: action.value};
+        case actions.reviewTest:
+            return {...state, test: action.value};
         default:
             console.log(`INVALID ACTION TYPE: ${action.type}`)
             return state;

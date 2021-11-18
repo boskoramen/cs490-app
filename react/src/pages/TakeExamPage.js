@@ -10,22 +10,20 @@ import { Button } from "../components/Button";
 
 import "ace-builds/src-noconflict/mode-python";
 
-// TODO: have a shared state for everything
-// TODO: change state to localState, add localState helper???
 const TakeExamPage = (props) => {
-    const context = useContext(MasterContext);
-    const { examID } = context.state;
-    const [ state, setState ] = useState({
+    const { state, dispatch } = useContext(MasterContext);
+    const { examID } = state;
+    const [ localState, setLocalState ] = useState({
         questionPool: null,
         currentQuestion: null,
         success: false,
         currentQuestionIdx: 0,
         answers: {},
     });
-    const { 
+    const {
         questionPool, currentQuestion, success,
         currentQuestionIdx, answers
-    } = state;
+    } = localState;
 
     const userID = cookie.load('userID');
     const sesID = cookie.load('sesID');
@@ -43,8 +41,8 @@ const TakeExamPage = (props) => {
                 ...newAnswers,
                 [question.question_id]: `def ${question.function_name}(${question_args}):\n\t`,
         };});
-        setState({
-            ...state,
+        setLocalState({
+            ...localState,
             questionPool: newQuestionPool,
             currentQuestion: newQuestionPool[currentQuestionIdx],
             answers: newAnswers,
@@ -55,9 +53,9 @@ const TakeExamPage = (props) => {
         if(res.data == 'bad attempt') {
             // TODO: add error handling
             return;
-        } 
-        setState({
-            ...state,
+        }
+        setLocalState({
+            ...localState,
             success: true
         });
     }
@@ -81,8 +79,8 @@ const TakeExamPage = (props) => {
                 <Button
                     onClick={() => {
                         const newIdx = (currentQuestionIdx + 1) < questionPool.length ? currentQuestionIdx + 1 : 0;
-                        setState({
-                            ...state,
+                        setLocalState({
+                            ...localState,
                             currentQuestionIdx: newIdx,
                             currentQuestion: questionPool[newIdx]
                         });
@@ -97,11 +95,11 @@ const TakeExamPage = (props) => {
                 <AceEditor
                     mode="python"
                     name="code-editor"
-                    height={200}
+                    height="200px"
                     value={answers[questionPool[currentQuestionIdx].question_id] || ""}
                     onChange={(value) => {
-                        setState({
-                            ...state,
+                        setLocalState({
+                            ...localState,
                             answers: {
                                 ...answers,
                                 [questionPool[currentQuestionIdx].question_id]: value,
@@ -112,6 +110,7 @@ const TakeExamPage = (props) => {
                 <Button
                     onClick={() => {
                         if(currentQuestion && Object.keys(answers).length === questionPool.length) {
+                            console.log(`questions: ${questionPool.map(question => question.question_id)}`);
                             queryServer('add_many_answer', {
                                 id: userID,
                                 sesID: sesID,

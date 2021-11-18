@@ -47,3 +47,15 @@ export const generateHeaderComp = (component) => {
         key: headerCompCount++,
     };
 }
+
+export const isObject = (obj) => {
+    return typeof(obj) === 'object' && !Array.isArray(obj) && obj !== null;
+}
+
+export const safeSpreadArr = (arr) => {
+    return Array.isArray(arr) ? arr : [];
+}
+
+export const safeSpreadObj = (obj) => {
+    return isObject(obj) ? obj : {};
+}

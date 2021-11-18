@@ -1,11 +1,15 @@
 import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
 import { Link, useHistory } from "react-router-dom";
+import { Box } from "../components/Box";
 import { Flex } from "../components/Flex";
 import { queryServer } from "../util/helpers";
 import cookie from "react-cookies";
 import { actions } from "../reducer/constants";
 import MasterContext from "../reducer/context";
+import styles from "../styles/main.scss";
+
+const { roundButton } = styles;
 
 const InstructorPage = (props) => {
     const { dispatch } = useContext(MasterContext);
@@ -49,12 +53,8 @@ const InstructorPage = (props) => {
                 </div>
                 <Flex>
                     {exams.map((exam, idx) => (
-                        <div
-                            style={{
-                                border: "2px solid red",
-                                borderRadius: "5px",
-                                padding: "5px"
-                            }}
+                        <Box
+                            className={roundButton}
                             key={idx}
                         >
                             <a
@@ -65,7 +65,7 @@ const InstructorPage = (props) => {
                             >
                                 {exam.name}
                             </a>
-                        </div>
+                        </Box>
                     ))}
                 </Flex>
                 <Link to="/create_question">

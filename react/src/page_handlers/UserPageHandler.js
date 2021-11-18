@@ -2,7 +2,6 @@ import React, { useContext } from "react";
 import { Redirect } from "react-router-dom/cjs/react-router-dom.min";
 import StudentPage from "../pages/StudentPage";
 import InstructorPage from "../pages/InstructorPage";
-import CreateQuestionPage from "../pages/CreateQuestionPage";
 import MasterContext from "../reducer/context";
 
 // Makes sure user has access to a user page and then directs them to the appropriate user page
