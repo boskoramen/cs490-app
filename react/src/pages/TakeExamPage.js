@@ -39,7 +39,6 @@ const TakeExamPage = (props) => {
             const question_args = question.function_parameters.split(',').map((param) => (param.trim().replace(/\s+/g, ' ').split(' ')[1])).join(', ')
             newAnswers = {
                 ...newAnswers,
-                [question.question_id]: `def ${question.function_name}(${question_args}):\n\t`,
         };});
         setLocalState({
             ...localState,
