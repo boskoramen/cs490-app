@@ -13,6 +13,7 @@ import CreateQuestionPageHandler from "./page_handlers/CreateQuestionPageHandler
 import CreateExamPageHandler from "./page_handlers/CreateExamPageHandler";
 import TestPickerPageHandler from "./page_handlers/TestPickerPageHandler";
 import TakeExamPageHandler from "./page_handlers/TakeExamPageHandler";
+import TestResultsPageHandler from "./page_handlers/TestResultsPageHandler";
 import { queryServer } from "./util/helpers";
 import ReviewTestPageHandler from "./page_handlers/ReviewTestPageHandler";
 
@@ -62,6 +63,9 @@ const Master = () => {
                     </Route>
                     <Route path="/review_exam">
                         <ReviewTestPageHandler />
+                    </Route>
+                    <Route path="/view_exam_results">
+                        <TestResultsPageHandler />
                     </Route>
                     <Route exact path="/">
                         <UserPageHandler />

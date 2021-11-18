@@ -1,7 +1,8 @@
 import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
 import { Textbox } from "../components/Textbox";
-import { queryServer } from "../util/helpers";
+import { queryServer, replaceChar } from "../util/helpers";
+import { Checkbox } from "../components/Checkbox";
 import { Flex } from "../components/Flex";
 import { Box } from "../components/Box";
 import cookie from "react-cookies";
@@ -12,26 +13,53 @@ import { Button } from "../components/Button";
 
 import "ace-builds/src-noconflict/mode-python";
 
-const { max, min } = Math;
-
 const ReviewTestPage = (props) => {
     const { state } = useContext(MasterContext);
     const { test } = state;
     const {
-        username, test_answer_data,
+        username, test_answer_data, test_id
     } = test;
     const [ localState, setLocalState ] = useState({
-        currentExamQuestion: null,
         success: false,
         currentAnswerIdx: 0,
-        feedback: {}
+        review: {}
     });
     const {
-        success, currentAnswerIdx, feedback
+        success, currentAnswerIdx, review
     } = localState;
 
     const userID = cookie.load('userID');
     const sesID = cookie.load('sesID');
+
+    // Populate review if it's empty
+    if(Object.keys(review).length == 0) {
+        let newReview = {};
+        for(const answer of test_answer_data) {
+            const testCaseScore = JSON.parse(answer.test_case_score);
+            const constraints = testCaseScore.constraints;
+            const inputOutputData = Object.keys(testCaseScore.test_case).map((key) => {
+                return {
+                    input: testCaseScore.test_case[key].input,
+                    expected_output: testCaseScore.test_case[key].expected_output,
+                    actual_output: testCaseScore.test_case[key].function_output,
+                };
+            });
+            newReview = {
+                ...newReview,
+                [answer.test_answer_id]: {
+                    review: '',
+                    score: answer.score,
+                    input_output_data: inputOutputData,
+                    test_case_value: testCaseScore.value,
+                    constraints
+                }
+            }
+        }
+        setLocalState({
+            ...localState,
+            review: newReview
+        });
+    }
 
     const currentAnswer = test_answer_data[currentAnswerIdx];
     const testCaseData = JSON.parse(currentAnswer.test_case_score);
@@ -43,18 +71,9 @@ const ReviewTestPage = (props) => {
                 <Button
                     onClick={() => {
                         const newIdx = (currentAnswerIdx + 1) < test_answer_data.length ? currentAnswerIdx + 1 : 0;
-                        const newTestAnswerId = test_answer_data[newIdx].test_answer_id
                         setLocalState({
                             ...localState,
                             currentAnswerIdx: newIdx,
-                            currentExamQuestion: null,
-                            feedback: {
-                                ...feedback,
-                                [newTestAnswerId]: {
-                                    ...feedback[newTestAnswerId],
-                                    ...(feedback[newTestAnswerId]?.feedback ? {} : {feedback: ''})
-                                }
-                            },
                         });
                     }}
                 >
@@ -69,19 +88,19 @@ const ReviewTestPage = (props) => {
                     height="200px"
                 />
                 <div>
-                    Feedback:
+                    Review:
                 </div>
                 <Textbox
-                    value={feedback[currentAnswer.test_answer_id]?.feedback || ''}
+                    value={Object.keys(review).length && review[currentAnswer.test_answer_id].review}
                     onChange={(value) => {
-                        const curFeedback = feedback[currentAnswer.test_answer_id];
+                        const curReview = review[currentAnswer.test_answer_id];
                         setLocalState({
                             ...localState,
-                            feedback: {
-                                ...feedback,
+                            review: {
+                                ...review,
                                 [currentAnswer.test_answer_id]: {
-                                    ...curFeedback,
-                                    feedback: value,
+                                    ...curReview,
+                                    review: value,
                                 }
                             }
                         });
@@ -90,12 +109,28 @@ const ReviewTestPage = (props) => {
                 <Flex
                     flexDirection="column"
                 >
-                    {Object.keys(testCaseData.constraints).map((constraint) => {
+                    {Object.keys(testCaseData.constraints).map((constraint, idx) => {
+                        const currentScore = Object.keys(review).length && review[currentAnswer.test_answer_id].score;
                         return (
                             <Flex
                                 key={constraint}
                                 backgroundColor="gray"
                             >
+                                <Checkbox
+                                    checked={currentScore[idx] == currentAnswer.score[idx]}
+                                    onClick={() => {
+                                        setLocalState({
+                                            ...localState,
+                                            review: {
+                                                ...review,
+                                                [currentAnswer.test_answer_id]: {
+                                                    ...review[currentAnswer.test_answer_id],
+                                                    score: replaceChar(currentScore, idx, (currentScore[idx] == 1 ? 0 : 1))
+                                                }
+                                            },
+                                        });
+                                    }}
+                                />
                                 <Box
                                 >
                                     Constraint {constraint}:
@@ -108,12 +143,31 @@ const ReviewTestPage = (props) => {
                             </Flex>
                         );
                     })}
-                    {Object.keys(testCaseData.test_case).map((testCase) => {
+                    {Object.keys(testCaseData.test_case).map((testCase, idx) => {
+                        // Next level mental gymnastics below
+                        // Everything is based on modifying the review score SPECIFICALLY
+                        const constraintCount = Object.keys(testCaseData.constraints).length;
+                        const currentScore = Object.keys(review).length && review[currentAnswer.test_answer_id].score;
                         return (
                             <Flex
                                 key={testCase}
                                 backgroundColor="gray"
                             >
+                                <Checkbox
+                                    checked={currentScore[idx + constraintCount] == currentAnswer.score[idx + constraintCount]}
+                                    onClick={() => {
+                                        setLocalState({
+                                            ...localState,
+                                            review: {
+                                                ...review,
+                                                [currentAnswer.test_answer_id]: {
+                                                    ...review[currentAnswer.test_answer_id],
+                                                    score: replaceChar(currentScore, idx + constraintCount, (currentScore[idx + constraintCount] == 1 ? 0 : 1))
+                                                }
+                                            },
+                                        });
+                                    }}
+                                />
                                 <Box
                                 >
                                     Test Case {testCase}:
@@ -121,7 +175,7 @@ const ReviewTestPage = (props) => {
                                 <Box
                                     backgroundColor="beige"
                                 >
-                                    {testCaseData.test_case[testCase].individual_score}
+                                    {testCaseData.test_case[testCase].score}
                                 </Box>
                             </Flex>
                         );
@@ -129,33 +183,25 @@ const ReviewTestPage = (props) => {
                 </Flex>
                 <Button
                     onClick={() => {
-                        if(currentAnswer && Object.keys(feedback).length === test_answer_data.length) {
-                            queryServer('add_many_feedback', {
-                                id: userID,
-                                sesID: sesID,
-                                test_id: testID,
-                                feedback_list: test_answer_data.map((answer) => ({
-                                    test_answer_id: answer.test_answer_id,
-                                    feedback: feedback[answer.test_answer_id].feedback,
-                                    point: feedback[answer.test_answer_id].points,
-                                    status: 'grouper',
-                                })),
-                            }, () => {
-                                setLocalState({...localState, success: true});
-                                queryServer('get_test', {
-                                    id: userID,
-                                    sesID: sesID,
-                                    test_id: testID
-                                }, (res) => {
-                                    queryServer('update_score', {
-                                        id: userID,
-                                        sesID: sesID,
-                                        student_id: res[0].student_id,
-                                        test_id: testID,
-                                    }, () => {setLocalState({...localState, success: true});});
-                                });
+                        queryServer('review', {
+                            answer_list: Object.keys(review).map((answerID) => ({
+                                test_answer_id: answerID,
+                                ...review[answerID],
+                            })),
+                            test_id,
+                        }, (res) => {
+                            if(res.data == 'bad attempt') {
+                                console.log(`bad attempt???`);
+                                return;
+                            }
+
+                            console.log('success');
+
+                            setLocalState({
+                                ...localState,
+                                success: true,
                             });
-                        }
+                        })
                     }}
                 >
                     Submit

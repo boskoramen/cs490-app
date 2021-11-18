@@ -5,6 +5,7 @@ import { actions } from "../reducer/constants.js";
 import { generateHeaderComp } from "../util/helpers.js";
 import MasterContext from "../reducer/context.js";
 import styles from "../styles/main.scss";
+import cookie from "react-cookies";
 
 const { codingPracticeTitleButton } = styles;
 
@@ -16,7 +17,8 @@ const UserPage = (props) => {
         <Button
             className={codingPracticeTitleButton}
             onClick={() => {
-                console.log('logging out');
+                cookie.remove('sesID');
+                cookie.remove('userID');
                 dispatch({type: actions.setLoggedIn, value: false});
             }}
         >
