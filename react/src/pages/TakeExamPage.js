@@ -35,11 +35,6 @@ const TakeExamPage = (props) => {
         }
         const newQuestionPool = res.data;
         let newAnswers = { ...answers };
-        newQuestionPool.map((question) => {
-            const question_args = question.function_parameters.split(',').map((param) => (param.trim().replace(/\s+/g, ' ').split(' ')[1])).join(', ')
-            newAnswers = {
-                ...newAnswers,
-        };});
         setLocalState({
             ...localState,
             questionPool: newQuestionPool,

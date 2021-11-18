@@ -368,7 +368,9 @@ const RightPanel = () => {
         setLocalState,
     } = useContext(context);
     const {
-        constraints
+        constraints, difficultySelection, topicSelection,
+        difficultyPool, topicPool, questionPool, filteredQuestionPool,
+        search
     } = localState;
 
     return (
@@ -381,37 +383,142 @@ const RightPanel = () => {
                 Constraints:
             </Box>
             <Flex
+                flexDirection="column"
                 width="300px"
             >
-                {Object.keys(constraints).map((key) => {
-                    return (
-                        <Box
-                            key={key}
-                        >
-                            <Flex
-                                justifyContent="flex-start"
+                <Flex>
+                    {Object.keys(constraints).map((key) => {
+                        return (
+                            <Box
+                                key={key}
                             >
-                                <Checkbox
-                                    checked={constraints[key]}
-                                    onClick={() => {
-                                        setLocalState({
-                                            ...localState,
-                                            constraints: {
-                                                ...constraints,
-                                                [key]: !constraints[key]
-                                            },
-                                        });
-                                    }}
-                                />
-                                <Box
-                                    padding='0px'
+                                <Flex
+                                    justifyContent="flex-start"
                                 >
-                                    {key}
+                                    <Checkbox
+                                        checked={constraints[key]}
+                                        onClick={() => {
+                                            setLocalState({
+                                                ...localState,
+                                                constraints: {
+                                                    ...constraints,
+                                                    [key]: !constraints[key]
+                                                },
+                                            });
+                                        }}
+                                    />
+                                    <Box
+                                        padding='0px'
+                                    >
+                                        {key}
+                                    </Box>
+                                </Flex>
+                            </Box>
+                        );
+                    })}
+                </Flex>
+                <Select
+                    value={difficultySelection}
+                    onChange={(value) => {
+                        setLocalState({
+                            ...localState,
+                            difficultySelection: value
+                        });
+                    }}
+                    options={
+                        difficultyPool?.map((entry) => ({value: entry, label: entry}))
+                    }
+                />
+                <Box>
+                    Topic:
+                </Box>
+                <Select
+                    value={topicSelection}
+                    onChange={(value) => {
+                        setLocalState({
+                            ...localState,
+                            topicSelection: value
+                        });
+                    }}
+                    options={
+                        topicPool?.map((entry) => ({value: entry, label: entry}))
+                    }
+                />
+                <Box>
+                    Search:
+                </Box>
+                <Input
+                    value={search}
+                    onChange={(value) => {
+                        setLocalState({
+                            ...localState,
+                            search: value,
+                        });
+                    }}
+                />
+                <Flex>
+                    <Button
+                        onClick={() => {
+                            const filtered = questionPool
+                                .filter((question) => {
+                                    if(difficultySelection && question.difficulty != difficultySelection.value) {
+                                        return false;
+                                    } else if(topicSelection && question.topic !== topicSelection.value) {
+                                        return false;
+                                    }
+                                    if(!question.name.match(new RegExp(search))) {
+                                        return false;
+                                    }
+                                    return true;
+                                })
+                                .map((question) => ({...question, value: 0}));
+
+                            setLocalState({
+                                ...localState,
+                                filteredQuestionPool: filtered
+                            });
+                        }}
+                    >
+                        Search
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            setLocalState({
+                                ...localState,
+                                difficultySelection: null,
+                                topicSelection: null,
+                                filteredQuestionPool: [],
+                            })
+                        }}
+                    >
+                        Clear
+                    </Button>
+                </Flex>
+                <Flex
+                    flexDirection="column"
+                >
+                    {filteredQuestionPool.map((question) => {
+                        return (
+                            <Flex
+                                flexDirection="column"
+                                backgroundColor="beige"
+                                width="-moz-fit-content"
+                                height="-moz-fit-content"
+                                style={{
+                                    margin: "5px",
+                                }}
+                                key={question.question_id}
+                            >
+                                <Box>
+                                    {`${question.function_name}(${question.function_parameters})`}
+                                </Box>
+                                <Box>
+                                    {question.name}
                                 </Box>
                             </Flex>
-                        </Box>
-                    );
-                })}
+                        );
+                    })}
+                </Flex>
             </Flex>
         </Flex>
     );
@@ -426,8 +533,12 @@ const CreateQuestionPage = (props) => {
         funcParamType: null,
         funcParamName: '',
         difficulty: '',
+        difficultyPool: [],
+        difficultySelection: null,
         // This is actually an Object for the Select component
         topic: null,
+        topicPool: [],
+        topicSelection: null,
         testCases: [],
         inputCase: '',
         outputCase: '',
@@ -439,10 +550,16 @@ const CreateQuestionPage = (props) => {
             while: false,
             if: false,
         },
+        search: '',
+        questionPool: null,
+        filteredQuestionPool: [],
     });
     const {
-        testCases, success
+        testCases, success, questionPool
     } = localState;
+
+    const userID = cookie.load('userID');
+    const sesID = cookie.load('sesID');
 
     const handleAddTestCases = (res) => {
         // TODO: make sure this actually works
@@ -467,8 +584,7 @@ const CreateQuestionPage = (props) => {
             });
             return;
         }
-        const userID = cookie.load('userID');
-        const sesID = cookie.load('sesID');
+
         const qID = res.data[0].question_id;
         setLocalState({
             ...localState,
@@ -484,6 +600,34 @@ const CreateQuestionPage = (props) => {
             sesID: sesID,
         }, handleAddTestCases);
     };
+
+    const populateQuestionPool = (res) => {
+        if(!res.data) {
+            // Add error messages
+            return;
+        }
+        const newQuestionPool = res.data;
+        let difficultySet = new Set();
+        let topicSet = new Set();
+        for(const question of newQuestionPool) {
+            difficultySet.add(question.difficulty);
+            topicSet.add(question.topic);
+        }
+        setLocalState({
+            ...localState,
+            questionPool: res.data,
+            difficultyPool: [...difficultySet],
+            topicPool: [...topicSet],
+        });
+    }
+
+    if(!questionPool) {
+        queryServer('get_question', {
+            instructor_id: userID,
+            id: userID,
+            sesID: sesID,
+        }, populateQuestionPool);
+    }
 
     return (
         success ?
