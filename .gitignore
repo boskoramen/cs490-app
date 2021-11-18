@@ -10,3 +10,8 @@ react/node_modules
 
 # Dev server
 /dev/
+
+# Middleware server stuff
+temp
+Debug
+beta.js
