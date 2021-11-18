@@ -83,8 +83,8 @@ const StudentPage = (props) => {
                         >
                             <a
                                 onClick={() => {
-                                    history.push('/review_exam_results');
-                                    dispatch({type: actions.seeTests, value: exam.exam_id});
+                                    history.push('/view_exam_results');
+                                    dispatch({type: actions.seeResults, value: exam});
                                 }}
                             >
                                 {exam.name}

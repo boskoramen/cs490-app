@@ -59,3 +59,7 @@ export const safeSpreadArr = (arr) => {
 export const safeSpreadObj = (obj) => {
     return isObject(obj) ? obj : {};
 }
+
+export const replaceChar = (str, idx, repl) => {
+    return str.slice(0, idx) + repl + str.slice(idx+1);
+}

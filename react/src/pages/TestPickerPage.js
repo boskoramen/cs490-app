@@ -1,5 +1,7 @@
 import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
+import { Box } from "../components/Box";
+import { Flex } from "../components/Flex";
 import { Redirect } from "react-router-dom";
 import { queryServer } from "../util/helpers";
 import cookie from "react-cookies";
@@ -38,21 +40,63 @@ const TestPickerPage = (props) => {
     return (
         testID === null ?
         <UserPage pageTitle="Pick an Exam">
-            {testPool && testPool.map((entry) => {
-                return (
-                    <Button
-                        className={roundButton}
-                        onClick={()=>{
-                            dispatch({type: actions.reviewTest, value: entry});
-                            setTestID(entry.test_id);
-                        }}
-                        key={entry.test_id}
-                    >
-                        {entry.username}
-                    </Button>
-                );
-            })
-            }
+            <Flex
+                flexDirection="column"
+            >
+                <Box>
+                    Not Reviewed:
+                </Box>
+                {testPool && testPool.not_reviewed.map((entry) => {
+                    return (
+                        <Button
+                            className={roundButton}
+                            onClick={()=>{
+                                dispatch({type: actions.reviewTest, value: entry});
+                                setTestID(entry.test_id);
+                            }}
+                            key={entry.test_id}
+                        >
+                            {entry.username}
+                        </Button>
+                    );
+                })}
+                <Box>
+                    Reviewed:
+                </Box>
+                {testPool && testPool.reviewed.map((entry) => {
+                    return (
+                        <Box
+                            className={roundButton}
+                        >
+                            <Flex
+                                flexDirection="column"
+                            >
+                                <a
+                                    onClick={()=>{
+                                        dispatch({type: actions.reviewTest, value: entry});
+                                        setTestID(entry.test_id);
+                                    }}
+                                    key={entry.test_id}
+                                >
+                                    {entry.username}{entry.release_test ? ' (released)' : ''}
+                                </a>
+                                <a
+                                    onClick={()=>{
+                                        queryServer('release', {
+                                            test_list: [
+                                                entry,
+                                            ],
+                                        });
+                                    }}
+                                    key={entry.test_id}
+                                >
+                                    Release
+                                </a>
+                            </Flex>
+                        </Box>
+                    );
+                })}
+            </Flex>
         </UserPage>
         : <Redirect to="/review_exam" />
     );

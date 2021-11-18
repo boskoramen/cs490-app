@@ -16,6 +16,8 @@ const reducer = (state, action) => {
             return {...state, examID: action.value};
         case actions.reviewTest:
             return {...state, test: action.value};
+        case actions.seeResults:
+            return {...state, gradeTest: action.value};
         default:
             console.log(`INVALID ACTION TYPE: ${action.type}`)
             return state;

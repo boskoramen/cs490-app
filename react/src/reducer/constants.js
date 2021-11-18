@@ -4,6 +4,7 @@ export const actions = {
     seeTests: 'seeTests',
     takeExam: 'takeExam',
     reviewTest: 'reviewTest',
+    seeResults: 'seeResults',
 };
 
 export const initialState = {
