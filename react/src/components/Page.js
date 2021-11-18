@@ -3,9 +3,8 @@ import { Box } from "./Box.js";
 
 export const Page = (props) => {
     return (
-        <Box 
+        <Box
             {...props}
-            width={props.width === undefined ? "100%" : props.width}
         />
     );
 }

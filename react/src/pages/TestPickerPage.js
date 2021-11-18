@@ -36,7 +36,6 @@ const TestPickerPage = (props) => {
         testID === null ?
         <UserPage pageTitle="Pick an Exam">
             {testPool && testPool.map((entry) => {
-                console.log(`entry: ${JSON.stringify(entry)}`);
                 return (
                     <Button
                         onClick={()=>{
@@ -45,7 +44,7 @@ const TestPickerPage = (props) => {
                         }}
                         key={entry.test_id}
                     >
-                        {entry.name}
+                        {entry.username}
                     </Button>
                 );
             })

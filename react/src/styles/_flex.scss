@@ -1,10 +1,10 @@
 .flexContainer {
     display: flex;
-    width: 200px;
+    width: 100%;
 }
 
 .flexContainer > * {
-    margin: 5px;
+    padding: 5px;
     margin-left: 0px;
     width: fit-content;
 }
