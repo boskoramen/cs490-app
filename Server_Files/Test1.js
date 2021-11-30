@@ -298,6 +298,16 @@ app.use('/', function (req, res)
 			results_not_taken = DBget("*", "exam", 'NOT EXISTS (SELECT * FROM test WHERE exam.exam_id = test.exam_id)');
 			results_taken = DBget("*", "test", "EXISTS (SELECT * FROM exam WHERE test.exam_id = exam.exam_id AND test.student_id = " + data.id +
 				' AND test.release_test = "true")');
+			for (let test of results_taken) {
+				const test_answer_data = DBget("test_answer.*, question.name, question.constraints, exam_question.point_value",
+					"test_answer INNER JOIN question ON test_answer.question_id = question.question_id INNER JOIN exam_question ON exam_question.question_id = question.question_id",
+					"test_id = " + test.test_id
+				);
+				test = {
+					...test,
+					test_answer_data,
+				};
+			}
 			total = {taken: results_taken, not_taken: results_not_taken};
 			res.send(total);
 		} else if (data.instructor_id != null)
