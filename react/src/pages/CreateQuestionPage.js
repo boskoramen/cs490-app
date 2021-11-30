@@ -491,6 +491,7 @@ const RightPanel = () => {
                                 difficultySelection: null,
                                 topicSelection: null,
                                 filteredQuestionPool: [],
+                                search: '',
                             })
                         }}
                     >

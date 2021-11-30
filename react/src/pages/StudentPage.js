@@ -87,7 +87,7 @@ const StudentPage = (props) => {
                                     dispatch({type: actions.seeResults, value: exam});
                                 }}
                             >
-                                {exam.name}
+                                FIX ME (StudentPage.js) {exam.name}
                             </a>
                         </div>
                     ))}

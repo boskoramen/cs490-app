@@ -67,6 +67,7 @@ const TestPickerPage = (props) => {
                     return (
                         <Box
                             className={roundButton}
+                            key={entry.test_id}
                         >
                             <Flex
                                 flexDirection="column"
@@ -76,7 +77,6 @@ const TestPickerPage = (props) => {
                                         dispatch({type: actions.reviewTest, value: entry});
                                         setTestID(entry.test_id);
                                     }}
-                                    key={entry.test_id}
                                 >
                                     {entry.username}{entry.release_test ? ' (released)' : ''}
                                 </a>
@@ -88,7 +88,6 @@ const TestPickerPage = (props) => {
                                             ],
                                         });
                                     }}
-                                    key={entry.test_id}
                                 >
                                     Release
                                 </a>

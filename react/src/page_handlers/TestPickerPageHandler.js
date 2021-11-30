@@ -7,9 +7,9 @@ import MasterContext from "../reducer/context";
 const TestPickerPageHandler = (props) => {
     const { state } = useContext(MasterContext);
     return (
-        !state.isLoggedIn && state.userType == 'instructor' && state.examID ?
-        <Redirect to="/" />
-        :  <TestPickerPage />
+        state.isLoggedIn && state.userType == 'instructor' && state.examID ?
+        <TestPickerPage />
+        : <Redirect to="/" />
     );
 }
 
