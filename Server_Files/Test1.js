@@ -298,12 +298,13 @@ app.use('/', function (req, res)
 			results_not_taken = DBget("*", "exam", 'NOT EXISTS (SELECT * FROM test WHERE exam.exam_id = test.exam_id)');
 			results_taken = DBget("*", "test", "EXISTS (SELECT * FROM exam WHERE test.exam_id = exam.exam_id AND test.student_id = " + data.id +
 				' AND test.release_test = "true")');
-			for (let test of results_taken) {
+		    for (let i = 0; i < results_taken.length; i++) {
+			const test = results_taken[i];
 				const test_answer_data = DBget("test_answer.*, question.name, question.constraints, exam_question.point_value",
-					"test_answer INNER JOIN question ON test_answer.question_id = question.question_id INNER JOIN exam_question ON exam_question.question_id = question.question_id",
-					"test_id = " + test.test_id
+					"test INNER JOIN exam ON test.exam_id = exam.exam_id INNER JOIN test_answer ON test.test_id = test_answer.test_id INNER JOIN question ON test_answer.question_id = question.question_id INNER JOIN exam_question ON exam_question.question_id = question.question_id AND exam_question.exam_id = exam.exam_id",
+					"test.test_id = " + test.test_id
 				);
-				test = {
+				results_taken[i] = {
 					...test,
 					test_answer_data,
 				};
@@ -538,7 +539,7 @@ app.use('/', function (req, res)
 					escaped = this_answer.answer.replace(/'/gm, "\\'");
 					score.push(count);
 					const test_case_score = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
-						exam_id)[0].point_value / this_score.slice(1 + constraint_list[i], this_score.length).length;
+								      data.exam_id)[0].point_value / count.slice(1 + constraint_arr[i], count.length).length;
 					const db_test_case_score = calculate_test_case_score(count, test_case_score, constraint_arr[i], constraint_names);
 					DBset("test_answer (test_id, score, answer, question_id, test_case_score)", this_test + ", '" + count + "', '" + escaped + "', " +
 						this_answer.question_id + ", '" + JSON.stringify(db_test_case_score) + "'");
