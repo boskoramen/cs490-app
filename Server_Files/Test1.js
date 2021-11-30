@@ -297,7 +297,7 @@ app.use('/', function (req, res)
 		{//if student is attempting to check their exams
 			results_not_taken = DBget("*", "exam", 'NOT EXISTS (SELECT * FROM test WHERE exam.exam_id = test.exam_id)');
 			results_taken = DBget("*", "test", "EXISTS (SELECT * FROM exam WHERE test.exam_id = exam.exam_id AND test.student_id = " + data.id +
-				' AND test.release = "true")');
+				' AND test.release_test = "true")');
 			total = {taken: results_taken, not_taken: results_not_taken};
 			res.send(total);
 		} else if (data.instructor_id != null)
@@ -309,15 +309,27 @@ app.use('/', function (req, res)
 		}
 	} else if (data.use == 'get_test')
 	{//get completed test from DB
-		let test_data = DBget("test.*, login.username", "test INNER JOIN login ON login.id = test.student_id", "exam_id = " +
+		let test_data = {
+			reviewed: [],
+			not_reviewed: [],
+		};
+		const tests = DBget("test.*, login.username", "test INNER JOIN login ON login.id = test.student_id", "exam_id = " +
 			data.exam_id);
-		for (let i = 0; i < test_data.length; i++)
+		for (const test of tests)
 		{
 		    const test_answer_data = DBget("test_answer.*, question.name, question.constraints, exam_question.point_value",
 						   "test_answer INNER JOIN question ON test_answer.question_id = question.question_id INNER JOIN exam_question ON exam_question.question_id = question.question_id",
-						 "test_id = " + test_data[i].test_id);
-		    console.log(`test_answer_data:\n${test_answer_data}`);
-		    test_data[i].test_answer_data = test_answer_data;
+						 "test_id = " + test.test_id);
+			let list_to_push;
+			if (test.review) {
+				list_to_push = test_data.reviewed;
+			} else {
+				list_to_push = test_data.not_reviewed;
+			}
+			list_to_push.push({
+				...test,
+				test_answer_data,
+			});
 		}
 		res.send(test_data);
 	} else if (data.use == 'get_test_answer')
@@ -356,7 +368,7 @@ app.use('/', function (req, res)
 	{
 		data.test_list.forEach(function (this_test)
 		{
-			DBchange("test", "reease = 'true'", "test_id = " + this_test.test_id);
+			DBchange("test", "release_test = 'true'", "test_id = " + this_test.test_id);
 		});
 		res.send(data.test_list.length.toString());
 	} else if (data.use == 'get_review')
