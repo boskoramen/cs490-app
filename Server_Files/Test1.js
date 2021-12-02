@@ -54,7 +54,7 @@ function DBchange(table, set, where)
 	}
 }
 
-function calculate_test_case_score(count, test_case_score, constraint_count, constraint_names)
+function calculate_test_case_score(count, test_case_score, constraint_count, constraint_names, output, results1)
 {
 	let db_test_case_score = {};
 	db_test_case_score.constraints = {};
@@ -359,9 +359,9 @@ app.use('/', function (req, res)
 			const constraint_names = Object.keys(this_answer).filter(name => name !== 'name');
 			// Constraints also includes the base name constraint
 			const constraint_count = constraint_names.length;
-			const db_test_case_score = calculate_test_case_score(this_answer.score, this_answer.test_case_value, constraint_count, constraint_names);
+			const db_test_case_score = calculate_test_case_score(this_answer.score, this_answer.test_case_value, constraint_count, constraint_names, this_answer.input_output_data.actual_output, this_answer.input_output_data);
 			DBchange('test_answer', "review = '" + this_answer.review.replace("'", "\'") + "', score = '" + this_answer.score.replace("'", "\'")
-				+ "', test_case_score = " + db_test_case_score, " test_answer_id = " + this_answer.test_answer_id);
+				+ "', test_case_score = '" + JSON.stringify(db_test_case_score) + "'", "test_answer_id = " + this_answer.test_answer_id);
 			if (this_answer.constraints.length > 0)
 			{
 				constraint_list.push(this_answer.constraints.match(",") + 1);
@@ -374,7 +374,8 @@ app.use('/', function (req, res)
 		});
 		calculate_grade(score_list, constraint_list, data.test_id, question_id_list,
 			DBget("exam_id", "test", "test_id = " + data.test_id)[0].exam_id);
-
+		DBchange("test", "review = 'true'", "test_id = " + data.test_id);
+		res.send('good job');
 	} else if (data.use == 'release')
 	{
 		data.test_list.forEach(function (this_test)
@@ -540,7 +541,7 @@ app.use('/', function (req, res)
 					score.push(count);
 					const test_case_score = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
 								      data.exam_id)[0].point_value / count.slice(1 + constraint_arr[i], count.length).length;
-					const db_test_case_score = calculate_test_case_score(count, test_case_score, constraint_arr[i], constraint_names);
+					const db_test_case_score = calculate_test_case_score(count, test_case_score, constraint_arr[i], constraint_names, output, results1);
 					DBset("test_answer (test_id, score, answer, question_id, test_case_score)", this_test + ", '" + count + "', '" + escaped + "', " +
 						this_answer.question_id + ", '" + JSON.stringify(db_test_case_score) + "'");
 				}//); // removed after change from foreach
@@ -574,9 +575,9 @@ app.use('/', function (req, res)
 				res.send(this_test.toString());
 			} catch (e)
 			{
-				throw e;
 				connectionsync.query("DELETE FROM test WHERE test_id = " + this_test);
 				res.send('bad attempt');
+				throw e;
 			}
 		} else
 		{
