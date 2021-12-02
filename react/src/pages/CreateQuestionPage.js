@@ -41,7 +41,7 @@ const FuncParamBox = (props) => {
                 </Flex>
             </Flex>
         </Box>
-    )
+    );
 }
 
 const TestCaseBox = (props) => {
@@ -110,6 +110,8 @@ const LeftPanel = () => {
                         prompt: value
                     });
                 }}
+                height='200px'
+                width='200px'
             />
             <Box>
                 Topic:
@@ -123,7 +125,7 @@ const LeftPanel = () => {
                     });
                 }}
                 options={
-                    ['For', 'While', 'Recursion', 'If', 'Math'].map((entry) => ({value: entry, label: entry}))
+                    ['For', 'While', 'Recursion', 'If', 'Math', 'Strings'].map((entry) => ({value: entry, label: entry}))
                 }
             />
             <Box>
@@ -176,6 +178,33 @@ const LeftPanel = () => {
                 />
             ))}
             <Flex>
+                <FuncParamBox
+                    type={
+                        <Select
+                            value={funcParamType}
+                            onChange={(value) => {
+                                setLocalState({
+                                    ...localState,
+                                    funcParamType: value
+                                });
+                            }}
+                            options={
+                                ['str', 'int', 'float', 'list', 'dict', 'set'].map((entry) => ({value: entry, label: entry}))
+                            }
+                        />
+                    }
+                    name={
+                        <Input
+                            value={funcParamName}
+                            onChange={(value) => {
+                                setLocalState({
+                                    ...localState,
+                                    funcParamName: value
+                                });
+                            }}
+                        />
+                    }
+                />
                 <Button
                     onClick={() => {
                         if(!funcParamType) {
@@ -216,33 +245,6 @@ const LeftPanel = () => {
                 >
                     Add
                 </Button>
-                <FuncParamBox
-                    type={
-                        <Select
-                            value={funcParamType}
-                            onChange={(value) => {
-                                setLocalState({
-                                    ...localState,
-                                    funcParamType: value
-                                });
-                            }}
-                            options={
-                                ['str', 'int', 'float', 'list', 'dict', 'set'].map((entry) => ({value: entry, label: entry}))
-                            }
-                        />
-                    }
-                    name={
-                        <Input
-                            value={funcParamName}
-                            onChange={(value) => {
-                                setLocalState({
-                                    ...localState,
-                                    funcParamName: value
-                                });
-                            }}
-                        />
-                    }
-                />
             </Flex>
             <Box>
                 Test Cases:
@@ -267,6 +269,30 @@ const LeftPanel = () => {
                 />
             ))}
             <Flex>
+                <TestCaseBox
+                    input={
+                        <Input
+                            value={inputCase}
+                            onChange={(value) => {
+                                setLocalState({
+                                    ...localState,
+                                    inputCase: value
+                                });
+                            }}
+                        />
+                    }
+                    output={
+                        <Input
+                            value={outputCase}
+                            onChange={(value) => {
+                                setLocalState({
+                                    ...localState,
+                                    outputCase: value
+                                });
+                            }}
+                        />
+                    }
+                />
                 <Button
                     onClick={() => {
                         if(!outputCase || !inputCase) {
@@ -301,30 +327,6 @@ const LeftPanel = () => {
                 >
                     Add
                 </Button>
-                <TestCaseBox
-                    input={
-                        <Input
-                            value={inputCase}
-                            onChange={(value) => {
-                                setLocalState({
-                                    ...localState,
-                                    inputCase: value
-                                });
-                            }}
-                        />
-                    }
-                    output={
-                        <Input
-                            value={outputCase}
-                            onChange={(value) => {
-                                setLocalState({
-                                    ...localState,
-                                    outputCase: value
-                                });
-                            }}
-                        />
-                    }
-                />
             </Flex>
             <Button
                 onClick={() => {
@@ -333,6 +335,14 @@ const LeftPanel = () => {
                             ...localState,
                             errorMessage: ''
                         });
+                        const funcNameRegex = new RegExp(funcName);
+                        if(!funcNameRegex.test(prompt)) {
+                            setLocalState({
+                                ...localState,
+                                errorMessage: 'The function name is not present in the question prompt. Students will not know what function name to use.'
+                            });
+                            return;
+                        }
                         const userID = cookie.load('userID');
                         const sesID = cookie.load('sesID');
                         const funcparm = funcParams.map((funcParam) => (`${funcParam.type} ${funcParam.name}`)).join(',');
@@ -344,7 +354,7 @@ const LeftPanel = () => {
                         }
                         constraint = constraintList.join(',');
                         queryServer('question', {
-                            name: prompt,
+                            name: prompt.replace('\n', '\\n'),
                             funcname: funcName,
                             funcparm,
                             difficulty: difficulty.value,

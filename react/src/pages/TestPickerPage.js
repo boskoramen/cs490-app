@@ -28,6 +28,25 @@ const TestPickerPage = (props) => {
         setTestPool(res.data);
     }
 
+    const handleRelease = (res) => {
+        if(!res.data) {
+            // Add error handling
+            return;
+        }
+        const ids = res.data;
+        console.log(JSON.stringify(ids));
+        setTestPool(testPool.map((entry) => {
+            if(entry.test_id in ids) {
+                return {
+                    ...entry,
+                    release_test: true,
+                };
+            } else {
+                return entry;
+            }
+        }))
+    }
+
     if(!testPool) {
         queryServer('get_test', {
             id: userID,
@@ -63,7 +82,7 @@ const TestPickerPage = (props) => {
                 <Box>
                     Reviewed:
                 </Box>
-                {testPool && testPool.reviewed.map((entry) => {
+                {testPool && testPool.reviewed.map((entry, idx) => {
                     return (
                         <Box
                             className={roundButton}
@@ -86,7 +105,7 @@ const TestPickerPage = (props) => {
                                             test_list: [
                                                 entry,
                                             ],
-                                        });
+                                        }, handleRelease);
                                     }}
                                 >
                                     Release

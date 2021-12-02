@@ -295,7 +295,7 @@ app.use('/', function (req, res)
 	{//get all exam in DB
 		if (data.usertype == 'student')
 		{//if student is attempting to check their exams
-			results_not_taken = DBget("*", "exam", 'NOT EXISTS (SELECT * FROM test WHERE exam.exam_id = test.exam_id)');
+			results_not_taken = DBget("*", "exam", 'NOT EXISTS (SELECT * FROM test WHERE exam.exam_id = test.exam_id AND test.student_id = ' + data.id + ')');
 			results_taken = DBget("*", "test", "EXISTS (SELECT * FROM exam WHERE test.exam_id = exam.exam_id AND test.student_id = " + data.id +
 				' AND test.release_test = "true")');
 		    for (let i = 0; i < results_taken.length; i++) {
@@ -378,11 +378,13 @@ app.use('/', function (req, res)
 		res.send('good job');
 	} else if (data.use == 'release')
 	{
+		let ids = [];
 		data.test_list.forEach(function (this_test)
 		{
 			DBchange("test", "release_test = 'true'", "test_id = " + this_test.test_id);
+			ids.push(this_test.test_id);
 		});
-		res.send(data.test_list.length.toString());
+		res.send(ids);
 	} else if (data.use == 'get_review')
 	{
 		if (data.test_id != null)

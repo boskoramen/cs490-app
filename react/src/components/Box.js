@@ -15,6 +15,7 @@ const validProps = [
     "fontStyle",
     "fontWeight",
     "color",
+    "whiteSpace",
 ]
 export const Box = (props) => {
     return (

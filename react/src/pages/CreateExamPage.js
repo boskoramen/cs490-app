@@ -203,7 +203,9 @@ const RightPanel = () => {
                             <Box>
                                 {`${question.function_name}(${question.function_parameters})`}
                             </Box>
-                            <Box>
+                            <Box
+                                whiteSpace='pre-wrap'
+                            >
                                 {question.name}
                             </Box>
                             <Flex>
