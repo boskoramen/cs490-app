@@ -35,16 +35,22 @@ const TestPickerPage = (props) => {
         }
         const ids = res.data;
         console.log(JSON.stringify(ids));
-        setTestPool(testPool.map((entry) => {
-            if(entry.test_id in ids) {
-                return {
-                    ...entry,
-                    release_test: true,
-                };
-            } else {
-                return entry;
-            }
-        }))
+        setTestPool({
+            ...testPool,
+            reviewed: testPool.reviewed.map((entry) => {
+                console.log(`entry.test_id: ${entry.test_id}`)
+                if(entry.test_id in ids) {
+                    console.log('not in ids');
+                    return {
+                        ...entry,
+                        release_test: true,
+                    };
+                } else {
+                    console.log('in ids');
+                    return entry;
+                }
+            }),
+        })
     }
 
     if(!testPool) {

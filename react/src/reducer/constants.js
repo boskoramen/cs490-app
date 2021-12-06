@@ -1,5 +1,4 @@
 export const actions = {
-    clearRedirectTo: 'clearRedirectTo',
     setLoggedIn: 'setLoggedIn',
     seeTests: 'seeTests',
     takeExam: 'takeExam',

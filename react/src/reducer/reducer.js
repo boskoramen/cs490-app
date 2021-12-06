@@ -3,8 +3,6 @@ import cookie from "react-cookies";
 
 const reducer = (state, action) => {
     switch(action.type) {
-        case actions.clearRedirectTo:
-            return {...state, redirectTo: ''};
         case actions.setLoggedIn:
             if(!action.value) {
                 cookie.remove('sesID');

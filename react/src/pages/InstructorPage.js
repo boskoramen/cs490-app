@@ -1,25 +1,33 @@
 import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
-import { Link, useHistory } from "react-router-dom";
+import { Link, Redirect, useHistory } from "react-router-dom";
 import { Box } from "../components/Box";
 import { Flex } from "../components/Flex";
+import { Button } from "../components/Button";
 import { queryServer } from "../util/helpers";
 import cookie from "react-cookies";
 import { actions } from "../reducer/constants";
 import MasterContext from "../reducer/context";
+import { generateHeaderComp } from "../util/helpers.js";
 import styles from "../styles/main.scss";
 
-const { roundButton } = styles;
+const { roundButton, codingPracticeTitleButton } = styles;
 
 const InstructorPage = (props) => {
     const { dispatch } = useContext(MasterContext);
     const [ localState, setLocalState ] = useState({
         exams: [],
         checkedExams: false,
+        redirectTo: null,
     });
     console.log('instructor page');
-    const { exams, checkedExams } = localState;
+    const { exams, checkedExams, redirectTo } = localState;
     const history = useHistory();
+    const headerComponents = props.headerComponents || [];
+
+    if(redirectTo !== null) {
+        return <Redirect to={redirectTo} />;
+    }
 
     const setExams = (res) => {
         if(!res.data) {
@@ -33,6 +41,20 @@ const InstructorPage = (props) => {
         });
     }
 
+    const CreateQuestionButton = (props) => (
+        <Button
+            className={codingPracticeTitleButton}
+            onClick={() => {
+                setLocalState({
+                    ...localState,
+                    redirectTo: '/create_question'
+                });
+            }}
+        >
+            Create Question
+        </Button>
+    );
+
     const userID = cookie.load('userID');
     if(!checkedExams) {
         queryServer('get_all_exam', {
@@ -41,7 +63,13 @@ const InstructorPage = (props) => {
     }
 
     return (
-        <UserPage pageTitle="Instructor Page">
+        <UserPage
+            pageTitle="Instructor Page"
+            headerComponents={[
+                ...headerComponents,
+                generateHeaderComp(CreateQuestionButton),
+            ]}
+        >
             <Flex flexDirection="column">
                 <div>
                     Section 001
@@ -57,6 +85,7 @@ const InstructorPage = (props) => {
                         <Box
                             className={roundButton}
                             key={idx}
+                            onClick={() => {console.log('You pressed me fella!');}}
                         >
                             <a
                                 onClick={() => {
@@ -69,9 +98,6 @@ const InstructorPage = (props) => {
                         </Box>
                     ))}
                 </Flex>
-                <Link to="/create_question">
-                    Create Question
-                </Link>
             </Flex>
         </UserPage>
     );
