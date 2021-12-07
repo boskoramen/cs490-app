@@ -75,6 +75,7 @@ function calculate_test_metadata(test) {
 			constraint_data,
 		};
 	}
+	raw_score = Math.max(0, raw_score);
 	return {
 		...test,
 		raw_score: raw_score,
@@ -377,7 +378,7 @@ app.use('/', function (req, res) {
 						this_answer.answer.replace(regex, 'def ' + question[0].function_name + '(');
 					}
 					let constraints = question[0].constraints.split(',');
-					let constraint_names = [];
+					let constraint_names = ['name'];
 
 					constraint_arr.push(0);
 					if (constraints[0] != "") {
@@ -444,7 +445,7 @@ app.use('/', function (req, res) {
 
 					const result = DBset("test_answer (test_id, answer, question_id)", this_test + ", '" + escaped + "', " +
 						this_answer.question_id);
-					const test_answer_id = result.resultId;
+					const test_answer_id = result.insertId;
 					console.log(`result: ${JSON.stringify(result)}`);
 					console.log(`test_answer_id: ${test_answer_id}`);
 					if (!test_answer_id) {
@@ -454,8 +455,9 @@ app.use('/', function (req, res) {
 					// Calculating the values of the test cases and constraints
 					const max_score = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
 						data.exam_id)[0].point_value;
-					const test_case_value = max_score / count.slice(1 + constraint_arr[i], count.length).length;
-					const constraint_count = constraint_arr[i];
+					// To account for the inherent name constraint
+					const constraint_count = constraint_arr[i] + 1;
+					const test_case_value = max_score / count.slice(constraint_count, count.length).length;
 					let raw_score = 0;
 
 					// Set up constraint scores
@@ -475,16 +477,12 @@ app.use('/', function (req, res) {
 						const correct = count[j] == 1;
 						const value = (correct ? test_case_value : 0);
 						const test_case_data = test_answer_data[j - constraint_count];
-						DBset('test_case_score (test_answer_id, test_case_id, score, output, correct',
-							test_answer_id + ", " + test_case_data.test_case_id + ", " +
-							", '" + test_case_data.output + "', " + correct
+						DBset('test_case_score (test_answer_id, test_case_id, score, output, correct)',
+							test_answer_id + ", " + test_case_data.test_case_id + ", "
+							+ value + ", '" + test_case_data.output + "', " + correct
 						);
 						raw_score += value;
 					}
-
-					// TODO: move getting grade data to a separate query
-					raw_score = Math.max(raw_score, 0);
-					const percentage_score = raw_score / max_score;
 				}
 				// calculate_grade(score, constraint_arr, this_test, question_id_list, data.exam_id);
 				res.send(this_test.toString());
