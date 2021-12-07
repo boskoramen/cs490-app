@@ -252,7 +252,7 @@ app.use('/', function (req, res) {
 		if (data.usertype == 'student') { //if student is attempting to check their exams
 			results_not_taken = DBget("*", "exam", 'NOT EXISTS (SELECT * FROM test WHERE exam.exam_id = test.exam_id AND test.student_id = ' + data.id + ')');
 			results_taken = DBget("*", "test INNER JOIN exam ON test.exam_id = exam.exam_id", "test.student_id = " + data.id +
-				' AND test.release_test = "true")');
+				' AND test.release_test = 1');
 			for (let i = 0; i < results_taken.length; i++) {
 				const test = results_taken[i];
 				results_taken[i] = calculate_test_metadata(test);
