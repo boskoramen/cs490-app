@@ -101,7 +101,7 @@ function calculate_grade(score_list, constraint_list, this_test, question_id_lis
 	console.log(score_list);
 	for (let i = 0; i < score_list.length; i++) {
 		this_score = score_list[i];
-		let base_score = this_score.slice(1 + constraint_list[i], this_score.length).match(/1/g) ? .length;
+		let base_score = this_score.slice(1 + constraint_list[i], this_score.length).match(/1/g)?.length;
 		if (base_score == null) {
 			base_score = 0
 		}
