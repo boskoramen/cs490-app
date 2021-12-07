@@ -106,7 +106,7 @@ function calculate_grade(score_list, constraint_list, this_test, question_id_lis
 			base_score = 0
 		}
 		console.log("base_score is " + base_score);
-		let constraint_score = this_score.slice(0, 1 + constraint_list[i]).match(/0/g) ? .length || 0;
+		let constraint_score = this_score.slice(0, 1 + constraint_list[i]).match(/0/g)?.length || 0;
 		let test_case_score = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
 			exam_id)[0].point_value / this_score.slice(1 + constraint_list[i], this_score.length).length;
 		console.log(`constraint_score: ${constraint_score}`);
@@ -352,11 +352,9 @@ app.use('/', function (req, res) {
 			let this_test = DBget("test_id", "test", 'student_id = ' + data.id + ' AND exam_id = ' + data.exam_id)[0].test_id;
 			try {
 				console.log("creating student test");
-				let score = [];
 				let constraint_arr = [];
 				let question_id_list = [];
 				for (let i = 0; i < data.answer_list.length; i++)
-				//data.answer_list.forEach(function (this_answer) // this line was replaces as I need to keep index of 2 arrays (answer_list and constraint_arr)
 				{
 					let output = [];
 					this_answer = data.answer_list[i];
@@ -447,6 +445,8 @@ app.use('/', function (req, res) {
 					const result = DBset("test_answer (test_id, answer, question_id)", this_test + ", '" + escaped + "', " +
 						this_answer.question_id);
 					const test_answer_id = result.resultId;
+					console.log(`result: ${JSON.stringify(result)}`);
+					console.log(`test_answer_id: ${test_answer_id}`);
 					if (!test_answer_id) {
 						throw Error;
 					}
