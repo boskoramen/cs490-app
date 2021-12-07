@@ -54,50 +54,6 @@ function DBchange(table, set, where)
 	}
 }
 
-function calculate_test_case_score(count, test_case_score, constraint_count, constraint_names, output, results1)
-{
-	let db_test_case_score = {};
-	db_test_case_score.constraints = {};
-	if (count[0] == 0)
-	{
-		db_test_case_score.constraints.name = "-" + test_case_score;
-	} else
-	{
-		db_test_case_score.constraints.name = "-0";
-	}
-	if (constraint_count != 0)
-	{
-		for (let q = 1; q <= constraint_count; q++)
-		{
-			if (count[q] == 0)
-			{
-				db_test_case_score["constraints"][constraint_names[q - 1]] = "-" + test_case_score;
-			} else
-			{
-				db_test_case_score["constraints"][constraint_names[q - 1]] = "-0";
-			}
-		}
-	}
-	db_test_case_score.test_case = {};
-	for (let q = 1 + constraint_count; q < count.length; q++)
-	{
-		db_test_case_score["test_case"][q] = {};
-		db_test_case_score["test_case"][q]["input"] = results1[q - 1 - constraint_count].input;
-		db_test_case_score["test_case"][q]["expected_output"] = results1[q - 1 - constraint_count].expected_output;
-		db_test_case_score["test_case"][q]["function_output"] = output[q - 1 - constraint_count];
-		if (count[q] == 0)
-		{
-			db_test_case_score["test_case"][q]["score"] = "+0";
-		} else
-		{
-			db_test_case_score["test_case"][q]["score"] = "+" + test_case_score;
-		}
-	}
-	db_test_case_score.value = test_case_score;
-	console.log("db_test_case_score:\n" + JSON.stringify(db_test_case_score));
-	return db_test_case_score;
-}
-
 function calculate_grade(score_list, constraint_list, this_test, question_id_list, exam_id)
 {
 	if (score_list.length != constraint_list.length || constraint_list.length != question_id_list)
@@ -245,12 +201,12 @@ app.use('/', function (req, res)
 					data.name + "', '" + data.funcname + "', '" + data.funcparm + "', " + data.id + ", '" + JSON.stringify(data.topic) + "', '"
 					+
 					JSON.stringify(data.difficulty) + "', '" + data.constraint + "'");
-				results1 = DBget("question_id", "question", "name = '" + data.name + "' AND function_name = '" + data.funcname +
+				question_id = DBget("question_id", "question", "name = '" + data.name + "' AND function_name = '" + data.funcname +
 					"' AND function_parameters = '" + data.funcparm + "' AND instructor_id = " + data.id + " AND topic = '" +
 					JSON.stringify(data.topic) +
-					"' AND difficulty = '" + JSON.stringify(data.difficulty) + "' AND constraints = '" + data.constraint + "'");
-				console.log("Question with id " + results1[0].question_id + " inserted into DB");
-				res.send(results1);
+					"' AND difficulty = '" + JSON.stringify(data.difficulty) + "' AND constraints = '" + data.constraint + "'")[0].question_id;
+				console.log("Question with id " + question_id + " inserted into DB");
+				res.send(question_id);
 			} catch (e)
 			{
 				if (e !== BreakException) throw e;
@@ -359,9 +315,8 @@ app.use('/', function (req, res)
 			const constraint_names = Object.keys(this_answer).filter(name => name !== 'name');
 			// Constraints also includes the base name constraint
 			const constraint_count = constraint_names.length;
-			const db_test_case_score = calculate_test_case_score(this_answer.score, this_answer.test_case_value, constraint_count, constraint_names, this_answer.input_output_data.actual_output, this_answer.input_output_data);
 			DBchange('test_answer', "review = '" + this_answer.review.replace("'", "\'") + "', score = '" + this_answer.score.replace("'", "\'")
-				+ "', test_case_score = '" + JSON.stringify(db_test_case_score) + "'", "test_answer_id = " + this_answer.test_answer_id);
+				+ "'", "test_answer_id = " + this_answer.test_answer_id);
 			if (this_answer.constraints.length > 0)
 			{
 				constraint_list.push(this_answer.constraints.match(",") + 1);
@@ -451,8 +406,8 @@ app.use('/', function (req, res)
 					let output = [];
 					this_answer = data.answer_list[i];
 					question_id_list.push(this_answer.question_id);
-					results1 = DBget("*", "test_case", "question_id = " + this_answer.question_id);
-					console.log("there are: " + results1.length + " test cases");
+					test_cases = DBget("*", "test_case", "question_id = " + this_answer.question_id);
+					console.log("there are: " + test_cases.length + " test cases");
 					question = DBget("*", "question", "question_id = " + this_answer.question_id);
 					let these_params = question[0].function_parameters.split(',');
 					for (let i = 0; i < these_params.length; i++)
@@ -472,18 +427,20 @@ app.use('/', function (req, res)
 						this_answer.answer.replace(regex, 'def ' + question[0].function_name + '(');
 					}
 					let constraints = question[0].constraints.split(',');
-					constraint_arr.push(0);
 					let constraint_names = [];
+
+					constraint_arr.push(0);
 					if (constraints[0] != "")
 					{
 						let constraint_answer = this_answer.answer.replace(regex, '');
 						constraints.forEach(function (this_constraint)
 						{
 							console.log("this_constraint is: " + this_constraint);
-							console.log(this_constraint);
 							constraint_arr[i] += 1;
 							constraint_names.push(this_constraint);
+
 							let search_str;
+
 							if (this_constraint == "recursion")
 							{
 								search_str = question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
@@ -506,7 +463,7 @@ app.use('/', function (req, res)
 					for (let i = 1; i <= question[0].function_parameters.split(',').length; i++)
 					{
 						console.log("these_params is: " + these_params);
-						console.log(these_params);
+
 						modified_answer = modified_answer + these_params[i - 1][0] + "(sys.argv[" + i + "])";
 						if (i != (question[0].function_parameters.match(/,/g) || []).length + 1)
 						{
@@ -520,7 +477,7 @@ app.use('/', function (req, res)
 					fd = fs.openSync(path, 'w');
 					fs.writeSync(fd, buffer, 0, buffer.length, null);
 					fs.closeSync(fd);
-					results1.forEach(function (testcase)
+					test_cases.forEach(function (testcase)
 					{
 						temp = [path, ...testcase.input.split(' ')];
 						console.log("calling function as: " + temp);
@@ -540,40 +497,29 @@ app.use('/', function (req, res)
 					});
 					console.log('binary string of current questions "score": ' + count);
 					escaped = this_answer.answer.replace(/'/gm, "\\'");
-					score.push(count);
-					const test_case_score = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
+					const test_case_value = DBget("point_value", "exam_question", "question_id = " + question_id_list[i] + " AND exam_id = " +
 								      data.exam_id)[0].point_value / count.slice(1 + constraint_arr[i], count.length).length;
-					const db_test_case_score = calculate_test_case_score(count, test_case_score, constraint_arr[i], constraint_names, output, results1);
-					DBset("test_answer (test_id, score, answer, question_id, test_case_score)", this_test + ", '" + count + "', '" + escaped + "', " +
-						this_answer.question_id + ", '" + JSON.stringify(db_test_case_score) + "'");
-				}//); // removed after change from foreach
-				calculate_grade(score, constraint_arr, this_test, question_id_list, data.exam_id);
-				// the following lines were original working code, currently I am unsure if calculate_grade works for this section so I am leaving the below as a guideline/backup
-				/*let raw_score = 0;
-				let total_score = 0;
-				console.log("number of questions: " + score.length);
-				console.log("score array: " + score);
-				console.log("stringified score array: " + JSON.stringify(score));
-				for (let i = 0; i < score.length; i++)
-				//score.forEach(function (this_score) // again replaced to track index of 2 arrs (score and constraint_arr)
-				{
-					this_score = score[i]
-					console.log("this score is " + this_score);
-					let temp = this_score.slice(1 + constraint_arr[i], this_score.length).match(/1/g)?.length;
-					if (temp == null)
-					{
-						temp = 0
+
+					// Calculating the values of the test cases and constraints
+					const constraint_count = constraint_arr[i];
+
+					// TODO: use test case value to set values and
+
+					// Set up constraint scores
+					for(let j = 0; j < constraint_count; j++) {
+						// TODO: add functionality here to set constraint_score
 					}
-					console.log("temp is " + temp);
-					raw_score += temp - this_score.slice(0, 1 + constraint_arr[i]).match(/0/g)?.length;
-					total_score += this_score.slice(1 + constraint_arr[i], this_score.length).length;
-					console.log("raw_score during: " + raw_score);
-					console.log("total_score during: " + total_score);
+
+					// Set up test case scores
+					for(let j = constraint_count; j < count.length; j++) {
+						// TODO: add functionality here to set test case score
+					}
+
+					const result = DBset("test_answer (test_id, score, answer, question_id)", this_test + ", '" + count + "', '" + escaped + "', " +
+						this_answer.question_id + "'");
+					console.log(`result: ${JSON.stringify(result)}`);
 				}//); // removed after change from foreach
-				console.log("raw_score after all questions: " + raw_score);
-				console.log("total_score after all questions: " + total_score);
-				let percentage_score = raw_score/total_score;
-				DBchange('test', 'percentage_score = ' + percentage_score + ', raw_score = ' + raw_score, 'test_id = ' + this_test);*/
+				//calculate_grade(score, constraint_arr, this_test, question_id_list, data.exam_id);
 				res.send(this_test.toString());
 			} catch (e)
 			{
