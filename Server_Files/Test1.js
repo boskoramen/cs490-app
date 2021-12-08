@@ -371,12 +371,13 @@ app.use('/', function (req, res) {
 
 					let count = '';
 
-					const regex = new RegExp("def\\s+" + question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\(");
-					if (this_answer.answer.match(regex)) {
+					const properHeaderRegex = new RegExp("def\\s+" + question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\(");
+					const replaceHeaderRegex = new RegExp("def\\s+\w+\\(");
+					if (this_answer.answer.match(properHeaderRegex)) {
 						count = count + 1;
 					} else {
 						count = count + 0;
-						this_answer.answer = this_answer.answer.replace(regex, 'def ' + question[0].function_name + '(');
+						this_answer.answer = this_answer.answer.replace(replaceHeaderRegex, 'def ' + question[0].function_name + '(');
 					}
 
 					const constraints = question[0].constraints.split(',');
