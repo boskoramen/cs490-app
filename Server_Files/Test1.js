@@ -300,7 +300,7 @@ app.use('/', function (req, res) {
 			for (let test_case of test_case_data) {
 				DBchange('test_case_score', 'score = ' + test_case.score, "id = " + test_case.id);
 			}
-			DBchange('test_answer', 'review = ' + review, 'test_answer_id = ' + test_answer_id);
+			DBchange('test_answer', "review = '" + review + "'", "test_answer_id = " + test_answer_id);
 		});
 		DBchange("test", "review = 1", "test_id = " + data.test_id);
 		res.send('good job');
