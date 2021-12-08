@@ -34,19 +34,22 @@ const TestPickerPage = (props) => {
             return;
         }
         const ids = res.data;
-        console.log(JSON.stringify(ids));
         setTestPool({
             ...testPool,
             reviewed: testPool.reviewed.map((entry) => {
-                console.log(`entry.test_id: ${entry.test_id}`)
-                if(entry.test_id in ids) {
-                    console.log('not in ids');
+                let released = false;
+                for(const id of ids) {
+                    if(id == entry.test_id) {
+                        released = true;
+                        break;
+                    }
+                }
+                if(released) {
                     return {
                         ...entry,
                         release_test: true,
                     };
                 } else {
-                    console.log('in ids');
                     return entry;
                 }
             }),
