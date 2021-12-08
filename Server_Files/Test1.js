@@ -372,7 +372,7 @@ app.use('/', function (req, res) {
 					let count = '';
 
 					const properHeaderRegex = new RegExp("def\\s+" + question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\(");
-					const replaceHeaderRegex = new RegExp("def\\s+\w+\\(");
+					const replaceHeaderRegex = new RegExp("def\\s+\\w+\\(");
 					if (this_answer.answer.match(properHeaderRegex)) {
 						count = count + 1;
 					} else {
