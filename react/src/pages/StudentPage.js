@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
 import { Flex } from "../components/Flex";
 import { Box } from "../components/Box";
-import { queryServer } from "../util/helpers";
+import { queryServer, addClassNames } from "../util/helpers";
 import { useHistory } from "react-router-dom";
 import cookie from "react-cookies";
 import MasterContext from "../reducer/context";
@@ -54,7 +54,7 @@ const StudentPage = (props) => {
                 <Flex>
                     {exams?.not_taken.map((exam, idx) => (
                         <div
-                            className={roundButton}
+                            classNames={addClassNames(roundButton)}
                             key={idx}
                         >
                             <a

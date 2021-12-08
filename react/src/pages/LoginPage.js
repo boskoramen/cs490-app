@@ -82,19 +82,6 @@ const LoginPage = (props) => {
 				>
 					Log In
 				</Button>
-				<a
-					href=""
-					onClick={(e) => {
-						e.preventDefault();
-						const history = useHistory();
-						history.push("/register");
-					}}
-					style={{
-						display: "inline-block",
-					}}
-				>
-					Create Account
-				</a>
 			</Flex>
 		</CodingPracticePage>
 	);

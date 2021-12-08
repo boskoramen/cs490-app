@@ -4,20 +4,21 @@ import { Page } from "../components/Page";
 import { Flex } from "../components/Flex";
 import styles from "../styles/main.scss";
 import MasterContext from "../reducer/context";
+import { addClassNames } from "../util/helpers";
 
 const { codingPracticeHeader, codingPracticeBody, codingPracticeTitle, codingPracticeTitleLabel, codingPracticeContents } = styles;
 const CodingPracticePage = (props) => {
     const { dispatch } = useContext(MasterContext);
     return (
         <Page {...props}>
-            <Box className={codingPracticeHeader}>
+            <Box classNames={addClassNames(codingPracticeHeader)}>
                 CodingPractice
             </Box>
-            <Box className={codingPracticeContents} style={{width: "100%"}}>
-                <Box className={codingPracticeTitle}>
+            <Box classNames={addClassNames(codingPracticeContents)} style={{width: "100%"}}>
+                <Box classNames={addClassNames(codingPracticeTitle)}>
                     <Flex
                     >
-                        <Box className={codingPracticeTitleLabel}>
+                        <Box classNames={addClassNames(codingPracticeTitleLabel)}>
                             {props.pageTitle}
                         </Box>
                         {props.headerComponents && props.headerComponents.map((elem) => {
@@ -28,7 +29,7 @@ const CodingPracticePage = (props) => {
                         }
                     </Flex>
                 </Box>
-                <Box className={codingPracticeBody}>
+                <Box classNames={addClassNames(codingPracticeBody)}>
                     {props.children}
                 </Box>
             </Box>

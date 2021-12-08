@@ -3,7 +3,7 @@ import UserPage from "./UserPage";
 import { Input } from "../components/Input";
 import { Checkbox } from "../components/Checkbox";
 import { Textbox } from "../components/Textbox";
-import { queryServer } from "../util/helpers";
+import { queryServer, addClassNames } from "../util/helpers";
 import { Button } from "../components/Button";
 import { Flex } from "../components/Flex";
 import { Box } from "../components/Box";
@@ -13,16 +13,12 @@ import cookie from "react-cookies";
 import styles from "../styles/main.scss";
 
 const { testCaseBox, funcParamBox, subBox } = styles;
-
-// TODO: Add regex safety check for function name being present in the prompt
-// TODO: Allow question header to automatically be added(?)
-
 const context = createContext(null);
 
 const FuncParamBox = (props) => {
     return (
         <Box
-            className={funcParamBox}
+            classNames={addClassNames(funcParamBox)}
         >
             <Flex
                 direction="column"
@@ -47,7 +43,7 @@ const FuncParamBox = (props) => {
 const TestCaseBox = (props) => {
     return (
         <Box
-            className={testCaseBox}
+            classNames={addClassNames(testCaseBox)}
         >
             <Flex
                 direction="column"
@@ -83,7 +79,10 @@ const LeftPanel = () => {
 
     return (
         <Flex
-            width="70%"
+            width="35%"
+            overflowY="auto"
+            overflowX="hidden"
+            maxHeight="750px"
             flexDirection="column"
         >
             {errorMessage &&
@@ -100,7 +99,7 @@ const LeftPanel = () => {
                 </Box>
             }
             <Box>
-                Question Prompt:
+                Question Prompt
             </Box>
             <Textbox
                 value={prompt}
@@ -114,7 +113,7 @@ const LeftPanel = () => {
                 width='200px'
             />
             <Box>
-                Topic:
+                Topic
             </Box>
             <Select
                 value={topic}
@@ -129,7 +128,7 @@ const LeftPanel = () => {
                 }
             />
             <Box>
-                Difficulty:
+                Difficulty
             </Box>
             <Select
                 value={difficulty}
@@ -144,7 +143,7 @@ const LeftPanel = () => {
                 }
             />
             <Box>
-                Function Name:
+                Function Name
             </Box>
             <Input
                 value={funcName}
@@ -156,21 +155,21 @@ const LeftPanel = () => {
                 }}
             />
             <Box>
-                Function Params:
+                Function Params
             </Box>
             {funcParams.map((funcParam) => (
                 <FuncParamBox
                     key={funcParam.name}
                     type={
                         <Box
-                            className={subBox}
+                            classNames={addClassNames(subBox)}
                         >
                             {funcParam.type}
                         </Box>
                     }
                     name={
                         <Box
-                            className={subBox}
+                            classNames={addClassNames(subBox)}
                         >
                             {funcParam.name}
                         </Box>
@@ -247,21 +246,21 @@ const LeftPanel = () => {
                 </Button>
             </Flex>
             <Box>
-                Test Cases:
+                Test Cases
             </Box>
             {testCases.map((testCase) => (
                 <TestCaseBox
                     key={testCase.input}
                     input={
                         <Box
-                            className={subBox}
+                            classNames={addClassNames(subBox)}
                         >
                             {testCase.input}
                         </Box>
                     }
                     output={
                         <Box
-                            className={subBox}
+                            classNames={addClassNames(subBox)}
                         >
                             {testCase.output}
                         </Box>
@@ -385,130 +384,136 @@ const RightPanel = () => {
 
     return (
         <Flex
-            width="30%"
+            width="65%"
+            height="100%"
             flexDirection="column"
             backgroundColor="brown"
         >
             <Box>
-                Constraints:
+                Constraints
             </Box>
-            <Flex
-                flexDirection="column"
-                width="300px"
-            >
-                <Flex>
-                    {Object.keys(constraints).map((key) => {
-                        return (
-                            <Box
-                                key={key}
-                            >
-                                <Flex
-                                    justifyContent="flex-start"
+            <Flex>
+                <Flex
+                    flexDirection="column"
+                    width="300px"
+                >
+                    <Flex>
+                        {Object.keys(constraints).map((key) => {
+                            return (
+                                <Box
+                                    key={key}
                                 >
-                                    <Checkbox
-                                        checked={constraints[key]}
-                                        onClick={() => {
-                                            setLocalState({
-                                                ...localState,
-                                                constraints: {
-                                                    ...constraints,
-                                                    [key]: !constraints[key]
-                                                },
-                                            });
-                                        }}
-                                    />
-                                    <Box
-                                        padding='0px'
+                                    <Flex
+                                        justifyContent="flex-start"
                                     >
-                                        {key}
-                                    </Box>
-                                </Flex>
-                            </Box>
-                        );
-                    })}
-                </Flex>
-                <Box>
-                    Difficulty:
-                </Box>
-                <Select
-                    value={difficultySelection}
-                    onChange={(value) => {
-                        setLocalState({
-                            ...localState,
-                            difficultySelection: value
-                        });
-                    }}
-                    options={
-                        difficultyPool?.map((entry) => ({value: entry, label: entry}))
-                    }
-                />
-                <Box>
-                    Topic:
-                </Box>
-                <Select
-                    value={topicSelection}
-                    onChange={(value) => {
-                        setLocalState({
-                            ...localState,
-                            topicSelection: value
-                        });
-                    }}
-                    options={
-                        topicPool?.map((entry) => ({value: entry, label: entry}))
-                    }
-                />
-                <Box>
-                    Search:
-                </Box>
-                <Input
-                    value={search}
-                    onChange={(value) => {
-                        setLocalState({
-                            ...localState,
-                            search: value,
-                        });
-                    }}
-                />
-                <Flex>
-                    <Button
-                        onClick={() => {
-                            const filtered = questionPool
-                                .filter((question) => {
-                                    if(difficultySelection && question.difficulty != difficultySelection.value) {
-                                        return false;
-                                    } else if(topicSelection && question.topic !== topicSelection.value) {
-                                        return false;
-                                    }
-                                    if(!question.name.match(new RegExp(search))) {
-                                        return false;
-                                    }
-                                    return true;
-                                })
-                                .map((question) => ({...question, value: 0}));
-
+                                        <Checkbox
+                                            checked={constraints[key]}
+                                            onClick={() => {
+                                                setLocalState({
+                                                    ...localState,
+                                                    constraints: {
+                                                        ...constraints,
+                                                        [key]: !constraints[key]
+                                                    },
+                                                });
+                                            }}
+                                        />
+                                        <Box
+                                            padding='0px'
+                                        >
+                                            {key}
+                                        </Box>
+                                    </Flex>
+                                </Box>
+                            );
+                        })}
+                    </Flex>
+                    <Box>
+                        Difficulty
+                    </Box>
+                    <Select
+                        value={difficultySelection}
+                        onChange={(value) => {
                             setLocalState({
                                 ...localState,
-                                filteredQuestionPool: filtered
+                                difficultySelection: value
                             });
                         }}
-                    >
-                        Search
-                    </Button>
-                    <Button
-                        onClick={() => {
+                        options={
+                            difficultyPool?.map((entry) => ({value: entry, label: entry}))
+                        }
+                    />
+                    <Box>
+                        Topic
+                    </Box>
+                    <Select
+                        value={topicSelection}
+                        onChange={(value) => {
                             setLocalState({
                                 ...localState,
-                                difficultySelection: null,
-                                topicSelection: null,
-                                filteredQuestionPool: [],
-                                search: '',
-                            })
+                                topicSelection: value
+                            });
                         }}
-                    >
-                        Clear
-                    </Button>
+                        options={
+                            topicPool?.map((entry) => ({value: entry, label: entry}))
+                        }
+                    />
+                    <Box>
+                        Search
+                    </Box>
+                    <Input
+                        value={search}
+                        onChange={(value) => {
+                            setLocalState({
+                                ...localState,
+                                search: value,
+                            });
+                        }}
+                    />
+                    <Flex>
+                        <Button
+                            onClick={() => {
+                                const filtered = questionPool
+                                    .filter((question) => {
+                                        if(difficultySelection && question.difficulty != difficultySelection.value) {
+                                            return false;
+                                        } else if(topicSelection && question.topic !== topicSelection.value) {
+                                            return false;
+                                        }
+                                        if(!question.name.match(new RegExp(search))) {
+                                            return false;
+                                        }
+                                        return true;
+                                    })
+                                    .map((question) => ({...question, value: 0}));
+
+                                setLocalState({
+                                    ...localState,
+                                    filteredQuestionPool: filtered
+                                });
+                            }}
+                        >
+                            Search
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                setLocalState({
+                                    ...localState,
+                                    difficultySelection: null,
+                                    topicSelection: null,
+                                    filteredQuestionPool: [],
+                                    search: '',
+                                })
+                            }}
+                        >
+                            Clear
+                        </Button>
+                    </Flex>
                 </Flex>
                 <Flex
+                    overflowY="auto"
+                    overflowX="hidden"
+                    maxHeight="750px"
                     flexDirection="column"
                 >
                     {filteredQuestionPool.map((question) => {
@@ -656,6 +661,7 @@ const CreateQuestionPage = (props) => {
             >
                 <Flex
                     width="100%"
+                    height="100%"
                 >
                     <LeftPanel />
                     <RightPanel />

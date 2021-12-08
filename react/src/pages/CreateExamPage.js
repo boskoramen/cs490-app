@@ -93,6 +93,7 @@ const RightPanel = () => {
     return (
         <Flex
             width="70%"
+            height="100%"
             backgroundColor="brown"
         >
             <Flex
@@ -187,6 +188,7 @@ const RightPanel = () => {
             </Flex>
             <Flex
                 flexDirection="column"
+                overflowY="scroll"
             >
                 {filteredQuestionPool.map((question) => {
                     return (
@@ -342,7 +344,9 @@ const CreateExamPage = (props) => {
                     sesID,
                 }}
             >
-                <Flex>
+                <Flex
+                    height="100%"
+                >
                     <LeftPanel />
                     <RightPanel />
                 </Flex>

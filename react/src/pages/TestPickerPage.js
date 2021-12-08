@@ -3,7 +3,7 @@ import UserPage from "./UserPage";
 import { Box } from "../components/Box";
 import { Flex } from "../components/Flex";
 import { Redirect } from "react-router-dom";
-import { queryServer } from "../util/helpers";
+import { queryServer, addClassNames } from "../util/helpers";
 import cookie from "react-cookies";
 import { Button } from "../components/Button";
 import MasterContext from "../reducer/context";
@@ -77,7 +77,7 @@ const TestPickerPage = (props) => {
                 {testPool && testPool.not_reviewed.map((entry) => {
                     return (
                         <Button
-                            className={roundButton}
+                            classNames={addClassNames(roundButton)}
                             onClick={()=>{
                                 dispatch({type: actions.reviewTest, value: entry});
                                 setTestID(entry.test_id);
@@ -94,7 +94,7 @@ const TestPickerPage = (props) => {
                 {testPool && testPool.reviewed.map((entry, idx) => {
                     return (
                         <Box
-                            className={roundButton}
+                            classNames={addClassNames(roundButton)}
                             key={entry.test_id}
                         >
                             <Flex

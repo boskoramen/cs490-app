@@ -5,3 +5,32 @@ export const constraint_description = {
     while: 'A while-loop must be used in the code',
     recursion: 'Recursion must be used in the code'
 }
+
+export const boxProps = [
+    "backgroundColor",
+    "height",
+    "width",
+    "padding",
+    "borderStyle",
+    "borderWidth",
+    "borderColor",
+    "fontStyle",
+    "fontWeight",
+    "color",
+    "whiteSpace",
+    "overflow",
+    "overflowX",
+    "overflowY",
+    "maxHeight",
+    "maxWidth",
+];
+
+export const flexProps = [
+    ...boxProps,
+    "flexDirection",
+    "flexWrap",
+    "flexGrow",
+    "flexShrink",
+    "justifyContent",
+    "alignItems",
+];

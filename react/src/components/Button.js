@@ -1,5 +1,7 @@
 import React from "react";
 import { parseProps } from "../util/helpers.js"
+import { pickHTMLProps } from 'react-sanitize-dom-props';
+import classNames from 'classnames';
 
 const validProps = [
     "backgroundColor",
@@ -16,7 +18,7 @@ const validProps = [
 export const Button = (props) => {
     return (
         <button
-            {...props}
+            {...pickHTMLProps(props)}
             style={{
                 ...props.style,
                 ...parseProps(props, validProps),
@@ -27,6 +29,7 @@ export const Button = (props) => {
                     onClick();
                 }
             }}
+            className={classNames(props.classNames)}
         />
     );
 }

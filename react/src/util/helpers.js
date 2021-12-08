@@ -67,3 +67,20 @@ export const replaceChar = (str, idx, repl) => {
 export const deepCopy = (src) => {
     return JSON.parse(JSON.stringify(src));
 }
+
+export const addClassNames = (classNames, propsClassNames) => {
+    let newClassNames = [];
+    if(Array.isArray(classNames)) {
+        newClassNames = [ ...classNames ];
+    } else {
+        newClassNames.push(classNames);
+    }
+
+    if(propsClassNames) {
+        newClassNames = [
+            ...newClassNames,
+            ...propsClassNames,
+        ];
+    }
+    return newClassNames;
+}

@@ -1,0 +1,15 @@
+.infoBox {
+    width: initial;
+    max-width: 500px;
+    background-color: gray;
+    margin-top: 10px;
+    border-radius: 2px;
+}
+
+.infoBox * {
+    margin-right: 5px;
+}
+
+.infoBox:last-child {
+    margin-right: 0px;
+}

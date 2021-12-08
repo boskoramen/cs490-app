@@ -262,6 +262,10 @@ const ReviewTestPage = (props) => {
                 </Box>
                 <Button
                     onClick={() => {
+                        if(totalScore < 0) {
+                            // TODO: add error messages
+                            return;
+                        }
                         queryServer('review', {
                             answer_list: Object.keys(review).filter((val) => val !== 'setup').map((answerID) => ({
                                 test_answer_id: answerID,

@@ -1,17 +1,17 @@
 import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
-import { Link, Redirect, useHistory } from "react-router-dom";
+import { Redirect, useHistory } from "react-router-dom";
 import { Box } from "../components/Box";
 import { Flex } from "../components/Flex";
 import { Button } from "../components/Button";
-import { queryServer } from "../util/helpers";
+import { queryServer, addClassNames } from "../util/helpers";
 import cookie from "react-cookies";
 import { actions } from "../reducer/constants";
 import MasterContext from "../reducer/context";
 import { generateHeaderComp } from "../util/helpers.js";
 import styles from "../styles/main.scss";
 
-const { roundButton, codingPracticeTitleButton } = styles;
+const { roundButton, codingPracticeTitleButton, infoBox } = styles;
 
 const InstructorPage = (props) => {
     const { dispatch } = useContext(MasterContext);
@@ -42,7 +42,7 @@ const InstructorPage = (props) => {
 
     const CreateQuestionButton = (props) => (
         <Button
-            className={codingPracticeTitleButton}
+            classNames={addClassNames(codingPracticeTitleButton)}
             onClick={() => {
                 setLocalState({
                     ...localState,
@@ -70,31 +70,50 @@ const InstructorPage = (props) => {
             ]}
         >
             <Flex flexDirection="column">
-                <div>
+                <Box>
                     Section 001
-                </div>
-                <Link to="/create_exam">
+                </Box>
+                <Box
+                    classNames={addClassNames(roundButton)}
+                    onClick={() => {
+                        setLocalState({
+                            ...localState,
+                            redirectTo: '/create_exam'
+                        });
+                    }}
+                >
                     Create Exam
-                </Link>
-                <div>
-                    Exams:
-                </div>
-                <Flex>
-                    {exams.map((exam, idx) => (
-                        <Box
-                            className={roundButton}
-                            key={idx}
-                        >
-                            <a
+                </Box>
+                <Flex
+                    flexDirection="column"
+                    classNames={addClassNames(infoBox)}
+                >
+                    <Box
+                        color="beige"
+                    >
+                        Exams
+                    </Box>
+                    <Flex>
+                        {exams.map((exam, idx) => (
+                            <Box
+                                classNames={addClassNames(roundButton)}
+                                key={idx}
                                 onClick={() => {
                                     history.push('/review_exam_results');
                                     dispatch({type: actions.seeTests, value: exam.exam_id});
                                 }}
                             >
-                                {exam.name}
-                            </a>
-                        </Box>
-                    ))}
+                                <a
+                                    onClick={() => {
+                                        history.push('/review_exam_results');
+                                        dispatch({type: actions.seeTests, value: exam.exam_id});
+                                    }}
+                                >
+                                    {exam.name}
+                                </a>
+                            </Box>
+                        ))}
+                    </Flex>
                 </Flex>
             </Flex>
         </UserPage>

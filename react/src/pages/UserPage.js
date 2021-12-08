@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import CodingPracticePage from "./CodingPracticePage.js";
 import { Button } from "../components/Button.js";
 import { actions } from "../reducer/constants.js";
-import { generateHeaderComp } from "../util/helpers.js";
+import { generateHeaderComp, addClassNames } from "../util/helpers.js";
 import MasterContext from "../reducer/context.js";
 import styles from "../styles/main.scss";
 import cookie from "react-cookies";
@@ -15,7 +15,7 @@ const UserPage = (props) => {
 
     const LogoutButton = (props) => (
         <Button
-            className={codingPracticeTitleButton}
+            classNames={addClassNames(codingPracticeTitleButton)}
             onClick={() => {
                 cookie.remove('sesID');
                 cookie.remove('userID');
