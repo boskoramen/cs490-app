@@ -240,13 +240,14 @@ app.use('/', function (req, res) {
 		exam_question = DBget("*", 'exam_question', 'exam_id = ' + data.exam_id);
 		let exam_question_list = [];
 		exam_question.forEach(function (this_question) {
-			current = DBget("*", "question", "question_id = " + this_question.question_id)[0];
+			const { question_id, point_value } = this_question;
+			current = DBget("*", "question", "question_id = " + question_id)[0];
 
-			console.log("retreiveing question with ID " + this_question.question_id);
-			exam_question_list = [
-				...exam_question_list,
-				current
-			]
+			console.log("retrieving question with ID " + question_id);
+			exam_question_list.push({
+				...current,
+				point_value,
+			});
 		});
 		res.send(exam_question_list);
 	} else if (data.use == 'get_all_exam') { //get all exam in DB
