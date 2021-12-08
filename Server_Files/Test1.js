@@ -66,7 +66,7 @@ function calculate_test_metadata(test) {
 		}
 		const constraint_data = DBget("id, name, score, correct", "constraint_score", "test_answer_id = " + test_answer.test_answer_id);
 		for (let constraint of constraint_data) {
-			raw_score -= constraint.score;
+			raw_score += constraint.score;
 		}
 
 		test_answer_data[j] = {
@@ -293,13 +293,14 @@ app.use('/', function (req, res) {
 		res.send(DBget("*", "login", "usertype = 'student'"));
 	} else if (data.use == 'review') {
 		data.answer_list.forEach(function (this_answer) {
-			const { constraint_data, test_case_data } = this_answer;
+			const { constraint_data, test_case_data, review, test_answer_id } = this_answer;
 			for (let constraint of constraint_data) {
 				DBchange('constraint_score', 'score = ' + constraint.score, "id = " + constraint.id);
 			}
 			for (let test_case of test_case_data) {
 				DBchange('test_case_score', 'score = ' + test_case.score, "id = " + test_case.id);
 			}
+			DBchange('test_answer', 'review = ' + review, 'test_answer_id = ' + test_answer_id);
 		});
 		DBchange("test", "review = 1", "test_id = " + data.test_id);
 		res.send('good job');
