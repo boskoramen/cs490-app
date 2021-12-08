@@ -209,12 +209,12 @@ app.use('/', function (req, res) {
 					}
 				});
 				results2 = DBset("question (name, function_name, function_parameters, instructor_id, topic, difficulty, constraints)", "'" +
-					data.name + "', '" + data.funcname + "', '" + data.funcparm + "', " + data.id + ", '" + JSON.stringify(data.topic) + "', '" +
-					JSON.stringify(data.difficulty) + "', '" + data.constraint + "'");
+					data.name + "', '" + data.funcname + "', '" + data.funcparm + "', " + data.id + ", '" + data.topic + "', '" +
+					data.difficulty + "', '" + data.constraint + "'");
 				question_id = DBget("question_id", "question", "name = '" + data.name + "' AND function_name = '" + data.funcname +
 					"' AND function_parameters = '" + data.funcparm + "' AND instructor_id = " + data.id + " AND topic = '" +
-					JSON.stringify(data.topic) +
-					"' AND difficulty = '" + JSON.stringify(data.difficulty) + "' AND constraints = '" + data.constraint + "'")[0].question_id;
+					data.topic +
+					"' AND difficulty = '" + data.difficulty + "' AND constraints = '" + data.constraint + "'")[0].question_id;
 				console.log("Question with id " + question_id + " inserted into DB");
 				res.send(question_id);
 			} catch (e) {
