@@ -1,8 +1,7 @@
 import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
 import { Textbox } from "../components/Textbox";
-import { queryServer, replaceChar } from "../util/helpers";
-import { Checkbox } from "../components/Checkbox";
+import { queryServer, deepCopy } from "../util/helpers";
 import { Flex } from "../components/Flex";
 import { Box } from "../components/Box";
 import cookie from "react-cookies";
@@ -10,8 +9,10 @@ import { Redirect } from "react-router-dom";
 import MasterContext from "../reducer/context";
 import AceEditor from "react-ace";
 import { Button } from "../components/Button";
+import { constraint_description } from "../util/constants";
 
 import "ace-builds/src-noconflict/mode-python";
+import { Input } from "../components/Input";
 
 const ReviewTestPage = (props) => {
     const { state } = useContext(MasterContext);
@@ -22,7 +23,9 @@ const ReviewTestPage = (props) => {
     const [ localState, setLocalState ] = useState({
         success: false,
         currentAnswerIdx: 0,
-        review: {}
+        review: {
+            setup: false,
+        },
     });
     const {
         success, currentAnswerIdx, review
@@ -32,26 +35,19 @@ const ReviewTestPage = (props) => {
     const sesID = cookie.load('sesID');
 
     // Populate review if it's empty
-    if(Object.keys(review).length == 0) {
-        let newReview = {};
+    if(!review.setup) {
+        let newReview = {
+            setup: true,
+        };
         for(const answer of test_answer_data) {
-            const testCaseScore = JSON.parse(answer.test_case_score);
-            const constraints = testCaseScore.constraints;
-            const inputOutputData = Object.keys(testCaseScore.test_case).map((key) => {
-                return {
-                    input: testCaseScore.test_case[key].input,
-                    expected_output: testCaseScore.test_case[key].expected_output,
-                    actual_output: testCaseScore.test_case[key].function_output,
-                };
-            });
+            const { test_answer_id, test_case_data, constraint_data, point_value } = answer;
             newReview = {
                 ...newReview,
-                [answer.test_answer_id]: {
+                [test_answer_id]: {
                     review: '',
-                    score: answer.score,
-                    input_output_data: inputOutputData,
-                    test_case_value: testCaseScore.value,
-                    constraints
+                    test_case_data: deepCopy(test_case_data),
+                    constraint_data: deepCopy(constraint_data),
+                    max_point_value: point_value,
                 }
             }
         }
@@ -62,7 +58,18 @@ const ReviewTestPage = (props) => {
     }
 
     const currentAnswer = test_answer_data[currentAnswerIdx];
-    const testCaseData = JSON.parse(currentAnswer.test_case_score);
+    const { test_case_data, constraint_data } = currentAnswer;
+    let totalScore = 0;
+    if(review.setup) {
+        for(let answer of test_answer_data) {
+            for(let constraint of review[answer.test_answer_id].constraint_data) {
+                totalScore += constraint.score;
+            }
+            for(let testCase of review[answer.test_answer_id].test_case_data) {
+                totalScore += testCase.score;
+            }
+        }
+    }
     return (
         !success ?
         <UserPage pageTitle="Review Exam" {...props}>
@@ -91,7 +98,7 @@ const ReviewTestPage = (props) => {
                     Review:
                 </div>
                 <Textbox
-                    value={Object.keys(review).length && review[currentAnswer.test_answer_id].review}
+                    value={review.setup && review[currentAnswer.test_answer_id].review}
                     onChange={(value) => {
                         const curReview = review[currentAnswer.test_answer_id];
                         setLocalState({
@@ -109,78 +116,98 @@ const ReviewTestPage = (props) => {
                 <Flex
                     flexDirection="column"
                 >
-                    {Object.keys(testCaseData.constraints).map((constraint, idx) => {
-                        const currentScore = Object.keys(review).length && review[currentAnswer.test_answer_id].score;
+                    {constraint_data.map((constraint, idx) => {
+                        if(!review.setup) {
+                            return;
+                        }
+                        const currentReview = review[currentAnswer.test_answer_id];
+                        const reviewConstraint = currentReview.constraint_data[idx];
                         return (
                             <Flex
-                                key={constraint}
+                                key={constraint.id}
                                 backgroundColor="gray"
                             >
-                                <Checkbox
-                                    checked={currentScore[idx] == currentAnswer.score[idx]}
-                                    onClick={() => {
-                                        setLocalState({
-                                            ...localState,
-                                            review: {
-                                                ...review,
-                                                [currentAnswer.test_answer_id]: {
-                                                    ...review[currentAnswer.test_answer_id],
-                                                    score: replaceChar(currentScore, idx, (currentScore[idx] == 1 ? 0 : 1))
-                                                }
-                                            },
-                                        });
-                                    }}
-                                />
                                 <Box
                                 >
-                                    Constraint {constraint}:
+                                    Constraint:
                                 </Box>
                                 <Box
                                     backgroundColor="beige"
                                 >
-                                    {testCaseData.constraints[constraint]}
+                                    {constraint_description[constraint.name]}
                                 </Box>
+                                <Box
+                                    backgroundColor="beige"
+                                >
+                                    {constraint.score}
+                                </Box>
+                                    <Input
+                                        type="number"
+                                        value={reviewConstraint.score}
+                                        onChange={(val) => {
+                                            if(val === NaN) {
+                                                val = 0;
+                                            }
+                                            reviewConstraint.score = Math.min(0, val);
+                                            setLocalState({
+                                                ...localState,
+                                                review: {
+                                                    ...review,
+                                                    [currentAnswer.test_answer_id]: {
+                                                        ...currentReview
+                                                    },
+                                                }
+                                            });
+                                        }}
+                                    />
                             </Flex>
                         );
                     })}
-                    {Object.keys(testCaseData.test_case).map((testCase, idx) => {
-                        // Next level mental gymnastics below
-                        // Everything is based on modifying the review score SPECIFICALLY
-                        const constraintCount = Object.keys(testCaseData.constraints).length;
-                        const currentScore = Object.keys(review).length && review[currentAnswer.test_answer_id].score;
+                    {test_case_data.map((testCase, idx) => {
+                        if(!review.setup) {
+                            return;
+                        }
+                        const currentReview = review[currentAnswer.test_answer_id];
+                        const reviewTestCase = currentReview.test_case_data[idx];
                         return (
                             <Flex
-                                key={testCase}
+                                key={testCase.id}
                                 backgroundColor="gray"
                             >
-                                <Checkbox
-                                    checked={currentScore[idx + constraintCount] == currentAnswer.score[idx + constraintCount]}
-                                    onClick={() => {
-                                        setLocalState({
-                                            ...localState,
-                                            review: {
-                                                ...review,
-                                                [currentAnswer.test_answer_id]: {
-                                                    ...review[currentAnswer.test_answer_id],
-                                                    score: replaceChar(currentScore, idx + constraintCount, (currentScore[idx + constraintCount] == 1 ? 0 : 1))
-                                                }
-                                            },
-                                        });
-                                    }}
-                                />
                                 <Flex
                                     flexDirection="column"
                                 >
                                     <Box>
                                         <Box
                                         >
-                                            Test Case {testCase}:
+                                            Test Case {idx+1}:
                                         </Box>
-                                        <Box
-                                            backgroundColor="beige"
-                                        >
-                                            {testCaseData.test_case[testCase].score}
-                                        </Box>
+                                        <Flex>
+                                            <Box
+                                                backgroundColor="beige"
+                                            >
+                                                {testCase.score}
+                                            </Box>
+                                            <Input
+                                                type="number"
+                                                value={reviewTestCase.score}
+                                                onChange={(val) => {
+                                                    if(val === NaN) {
+                                                        val = 0;
+                                                    }
+                                                    reviewTestCase.score = Math.max(0, val);
+                                                    setLocalState({
+                                                        ...localState,
+                                                        review: {
+                                                            ...review,
+                                                            [currentAnswer.test_answer_id]: {
+                                                                ...currentReview
+                                                            },
+                                                        }
+                                                    });
+                                                }}
+                                            />
+                                        </Flex>
                                     </Box>
                                     <Flex>
                                         <Box>
@@ -189,7 +216,7 @@ const ReviewTestPage = (props) => {
                                         <Box
                                             backgroundColor="beige"
                                         >
-                                            {testCaseData.test_case[testCase].input}
+                                            {testCase.input}
                                         </Box>
                                     </Flex>
                                     <Flex>
@@ -199,7 +226,7 @@ const ReviewTestPage = (props) => {
                                         <Box
                                             backgroundColor="beige"
                                         >
-                                            {testCaseData.test_case[testCase].expected_output}
+                                            {testCase.expected_output}
                                         </Box>
                                     </Flex>
                                     <Flex>
@@ -209,7 +236,7 @@ const ReviewTestPage = (props) => {
                                         <Box
                                             backgroundColor="beige"
                                         >
-                                            {testCaseData.test_case[testCase].function_output}
+                                            {testCase.output}
                                         </Box>
                                     </Flex>
                                 </Flex>
@@ -217,10 +244,26 @@ const ReviewTestPage = (props) => {
                         );
                     })}
                 </Flex>
+                <Box
+                    backgroundColor="purple"
+                >
+                    <Flex>
+                        <Box
+                            backgroundColor="beige"
+                        >
+                            {currentAnswer.point_value}
+                        </Box>
+                        <Box
+                            backgroundColor="beige"
+                        >
+                            {totalScore}
+                        </Box>
+                    </Flex>
+                </Box>
                 <Button
                     onClick={() => {
                         queryServer('review', {
-                            answer_list: Object.keys(review).map((answerID) => ({
+                            answer_list: Object.keys(review).filter((val) => val !== 'setup').map((answerID) => ({
                                 test_answer_id: answerID,
                                 ...review[answerID],
                             })),

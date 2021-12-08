@@ -63,3 +63,7 @@ export const safeSpreadObj = (obj) => {
 export const replaceChar = (str, idx, repl) => {
     return str.slice(0, idx) + repl + str.slice(idx+1);
 }
+
+export const deepCopy = (src) => {
+    return JSON.parse(JSON.stringify(src));
+}

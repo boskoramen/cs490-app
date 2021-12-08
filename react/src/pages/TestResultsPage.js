@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import UserPage from "./UserPage";
-import { queryServer } from "../util/helpers";
+import { constraint_description } from "../util/constants";
 import { Flex } from "../components/Flex";
 import { Box } from "../components/Box";
 import cookie from "react-cookies";
@@ -29,7 +29,17 @@ const TestResultsPage = (props) => {
     const sesID = cookie.load('sesID');
 
     const currentAnswer = test_answer_data[currentAnswerIdx];
-    const testCaseData = JSON.parse(currentAnswer.test_case_score);
+    const { test_case_data, constraint_data } = currentAnswer;
+
+    let totalScore = 0;
+    for(let answer of test_answer_data) {
+        for(let constraint of answer.constraint_data) {
+            totalScore += constraint.score;
+        }
+        for(let testCase of answer.test_case_data) {
+            totalScore += testCase.score;
+        }
+    }
     return (
         !success ?
         <UserPage pageTitle="View Exam Results" {...props}>
@@ -63,41 +73,50 @@ const TestResultsPage = (props) => {
                 <Flex
                     flexDirection="column"
                 >
-                    {Object.keys(testCaseData.constraints).map((constraint, idx) => {
+                    {constraint_data.map((constraint, idx) => {
                         return (
                             <Flex
-                                key={constraint}
+                                key={constraint.id}
                                 backgroundColor="gray"
                             >
                                 <Box
                                 >
-                                    Constraint {constraint}:
+                                    Constraint:
                                 </Box>
                                 <Box
                                     backgroundColor="beige"
                                 >
-                                    {testCaseData.constraints[constraint]}
+                                    {constraint_description[constraint.name]}
+                                </Box>
+                                <Box
+                                    backgroundColor="beige"
+                                >
+                                    {constraint.score}
                                 </Box>
                             </Flex>
                         );
                     })}
-                    {Object.keys(testCaseData.test_case).map((testCase, idx) => {
+                    {test_case_data.map((testCase, idx) => {
                         return (
                             <Flex
-                                key={testCase}
+                                key={testCase.id}
                                 backgroundColor="gray"
                             >
                                 <Flex
                                     flexDirection="column"
                                 >
-                                    <Box
-                                    >
-                                        Test Case {testCase}:
-                                    </Box>
-                                    <Box
-                                        backgroundColor="beige"
-                                    >
-                                        {testCaseData.test_case[testCase].score}
+                                    <Box>
+                                        <Box
+                                        >
+                                            Test Case {idx+1}:
+                                        </Box>
+                                        <Flex>
+                                            <Box
+                                                backgroundColor="beige"
+                                            >
+                                                {testCase.score}
+                                            </Box>
+                                        </Flex>
                                     </Box>
                                     <Flex>
                                         <Box>
@@ -106,7 +125,7 @@ const TestResultsPage = (props) => {
                                         <Box
                                             backgroundColor="beige"
                                         >
-                                            {testCaseData.test_case[testCase].input}
+                                            {testCase.input}
                                         </Box>
                                     </Flex>
                                     <Flex>
@@ -116,7 +135,7 @@ const TestResultsPage = (props) => {
                                         <Box
                                             backgroundColor="beige"
                                         >
-                                            {testCaseData.test_case[testCase].expected_output}
+                                            {testCase.expected_output}
                                         </Box>
                                     </Flex>
                                     <Flex>
@@ -126,7 +145,7 @@ const TestResultsPage = (props) => {
                                         <Box
                                             backgroundColor="beige"
                                         >
-                                            {testCaseData.test_case[testCase].function_output}
+                                            {testCase.output}
                                         </Box>
                                     </Flex>
                                 </Flex>
@@ -134,6 +153,17 @@ const TestResultsPage = (props) => {
                         );
                     })}
                 </Flex>
+                <Box
+                    backgroundColor="purple"
+                >
+                    <Flex>
+                        <Box
+                            backgroundColor="beige"
+                        >
+                            {totalScore}
+                        </Box>
+                    </Flex>
+                </Box>
                 <Button
                     onClick={() => {
                         setLocalState({

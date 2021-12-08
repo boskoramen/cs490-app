@@ -20,7 +20,6 @@ const InstructorPage = (props) => {
         checkedExams: false,
         redirectTo: null,
     });
-    console.log('instructor page');
     const { exams, checkedExams, redirectTo } = localState;
     const history = useHistory();
     const headerComponents = props.headerComponents || [];
@@ -85,7 +84,6 @@ const InstructorPage = (props) => {
                         <Box
                             className={roundButton}
                             key={idx}
-                            onClick={() => {console.log('You pressed me fella!');}}
                         >
                             <a
                                 onClick={() => {
