@@ -363,24 +363,24 @@ app.use('/', function (req, res) {
 					this_answer = data.answer_list[i];
 					question_id_list.push(this_answer.question_id);
 					test_cases = DBget("*", "test_case", "question_id = " + this_answer.question_id);
-					console.log("there are: " + test_cases.length + " test cases");
 					question = DBget("*", "question", "question_id = " + this_answer.question_id);
 					let these_params = question[0].function_parameters.split(',');
 					for (let i = 0; i < these_params.length; i++) {
 						these_params[i] = these_params[i].trim().replace(/\s+/g, ' ').split(' ')
 					}
+
 					let count = '';
-					let regex = new RegExp("def\\s+" + question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\(");
-					console.log("using regex: " + regex + " to find the function definition");
-					console.log("def\\s+" + question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\(");
+
+					const regex = new RegExp("def\\s+" + question[0].function_name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + "\\(");
 					if (this_answer.answer.match(regex)) {
 						count = count + 1;
 					} else {
 						count = count + 0;
-						this_answer.answer.replace(regex, 'def ' + question[0].function_name + '(');
+						this_answer.answer = this_answer.answer.replace(regex, 'def ' + question[0].function_name + '(');
 					}
-					let constraints = question[0].constraints.split(',');
-					let constraint_names = ['name'];
+
+					const constraints = question[0].constraints.split(',');
+					let constraint_names = [ 'name' ];
 
 					constraint_arr.push(0);
 					if (constraints[0] != "") {
