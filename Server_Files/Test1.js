@@ -202,12 +202,6 @@ app.use('/', function (req, res) {
 			}
 			let BreakException = {};
 			try {
-				a_check.forEach(function (this_param) {
-					console.log("this_param is :" + this_param);
-					if (this_param.length != 2) {
-						throw BreakException;
-					}
-				});
 				results2 = DBset("question (name, function_name, function_parameters, instructor_id, topic, difficulty, constraints)", "'" +
 					data.name + "', '" + data.funcname + "', '" + data.funcparm + "', " + data.id + ", '" + data.topic + "', '" +
 					data.difficulty + "', '" + data.constraint + "'");
