@@ -11,7 +11,6 @@ import AceEditor from "react-ace";
 import { Button } from "../components/Button";
 import { constraint_description } from "../util/constants";
 import { correctGreen, wrongRed } from "../util/colors";
-import { useTable } from "react-table";
 
 import "ace-builds/src-noconflict/mode-python";
 import { Input } from "../components/Input";
@@ -19,43 +18,6 @@ import { Input } from "../components/Input";
 import styles from "../styles/main.scss";
 
 const { roundButton, roundButtonBody, infoBox, tableInput } = styles;
-
-const Table = ({columns, data}) => {
-    const {
-        getTableProps,
-        getTableBodyProps,
-        headerGroups,
-        rows,
-        prepareRow,
-    } = useTable({columns, data});
-
-    return (
-        <table {...getTableProps()}>
-            <thead>
-                {headerGroups.map(headerGroup => {
-                    <tr {...headerGroup.getHeaderGroupProps()}>
-                        {headerGroup.headers.map(column => {
-                            return <th {...column.getHeaderProps()}>{column.render('Header')}</th>
-                        })}
-                    </tr>
-                })}
-            </thead>
-            <tbody {...getTableBodyProps()}>
-                {rows.map((row) => {
-                    prepareRow(row);
-                    return (
-                        <tr {...row.getRowProps()}>
-                            {row.cells.map(cell => {
-                                return <td {...cell.getCellProps()}>{cell.render('Cell')}</td>
-                            })}
-                        </tr>
-                    );
-                })}
-            </tbody>
-        </table>
-    );
-}
-
 const ReviewTestPage = (props) => {
     const { state } = useContext(MasterContext);
     const { test } = state;
