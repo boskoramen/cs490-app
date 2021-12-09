@@ -109,8 +109,8 @@ const LeftPanel = () => {
                         prompt: value
                     });
                 }}
-                height='200px'
-                width='600px'
+                minHeight='200px'
+                minWidth='650px'
             />
             <Box>
                 Topic
@@ -662,6 +662,8 @@ const CreateQuestionPage = (props) => {
                 <Flex
                     width="100%"
                     height="100%"
+                    overflowY="hidden"
+                    overflowX="hidden"
                 >
                     <LeftPanel />
                     <RightPanel />

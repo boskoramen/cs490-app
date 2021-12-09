@@ -23,6 +23,9 @@ export const boxProps = [
     "overflowY",
     "maxHeight",
     "maxWidth",
+    "minHeight",
+    "minWidth",
+    "resize",
 ];
 
 export const flexProps = [
