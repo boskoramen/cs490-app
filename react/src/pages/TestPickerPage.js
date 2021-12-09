@@ -10,7 +10,7 @@ import MasterContext from "../reducer/context";
 import { actions } from "../reducer/constants";
 import styles from "../styles/main.scss";
 
-const { roundButton, roundButtonBody } = styles;
+const { roundButton, roundButtonBody, infoBox } = styles;
 
 const TestPickerPage = (props) => {
     const { state, dispatch } = useContext(MasterContext);
@@ -71,65 +71,95 @@ const TestPickerPage = (props) => {
             <Flex
                 flexDirection="column"
             >
-                <Box>
-                    Not Reviewed:
-                </Box>
-                {testPool && testPool.not_reviewed.map((entry) => {
-                    return (
-                        <Button
-                            classNames={addClassNames(roundButton)}
-                            onClick={()=>{
-                                dispatch({type: actions.reviewTest, value: entry});
-                                setTestID(entry.test_id);
-                            }}
-                            key={entry.test_id}
-                        >
-                            <Box
-                                classNames={addClassNames(roundButtonBody)}
-                            >
-                                {entry.username}
-                            </Box>
-                        </Button>
-                    );
-                })}
-                <Box>
-                    Reviewed:
-                </Box>
-                {testPool && testPool.reviewed.map((entry, idx) => {
-                    return (
-                        <Flex
-                            classNames={addClassNames(roundButton)}
-                            flexDirection="column"
-                            key={entry.test_id}
-                            onClick={()=>{
-                                dispatch({type: actions.reviewTest, value: entry});
-                                setTestID(entry.test_id);
-                            }}
-                        >
-                            <Box
-                                classNames={addClassNames(roundButtonBody)}
-                                onClick={()=>{
-                                    dispatch({type: actions.reviewTest, value: entry});
-                                    setTestID(entry.test_id);
-                                }}
-                            >
-                                {entry.username}{entry.release_test ? ' (released)' : ''}
-                            </Box>
-                            <a
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    queryServer('release', {
-                                        test_list: [
-                                            entry,
-                                        ],
-                                    }, handleRelease);
-                                }}
-                            >
-                                Release
-                            </a>
-                        </Flex>
-                    );
-                })}
+                {testPool?.not_reviewed.length ?
+                <Flex
+                    flexDirection="column"
+                    classNames={addClassNames(infoBox)}
+                >
+                    <Box>
+                        Not Reviewed
+                    </Box>
+                    <Flex
+                        flexDirection='column'
+                    >
+                        {testPool && testPool.not_reviewed.map((entry) => {
+                            return (
+                                <Button
+                                    classNames={addClassNames(roundButton)}
+                                    onClick={()=>{
+                                        dispatch({type: actions.reviewTest, value: entry});
+                                        setTestID(entry.test_id);
+                                    }}
+                                    key={entry.test_id}
+                                    style={{
+                                        marginBottom: '5px',
+                                    }}
+                                >
+                                    <Box
+                                        classNames={addClassNames(roundButtonBody)}
+                                    >
+                                        {entry.username}
+                                    </Box>
+                                </Button>
+                            );
+                        })}
+                    </Flex>
+                </Flex>
+                : null
+                }
+                {testPool?.reviewed.length ?
+                <Flex
+                    flexDirection="column"
+                    classNames={addClassNames(infoBox)}
+                >
+                    <Box>
+                        Reviewed
+                    </Box>
+                    <Flex
+                        flexDirection="column"
+                    >
+                        {testPool && testPool.reviewed.map((entry, idx) => {
+                            return (
+                                <Flex
+                                    classNames={addClassNames(roundButton)}
+                                    flexDirection="column"
+                                    key={entry.test_id}
+                                    onClick={()=>{
+                                        dispatch({type: actions.reviewTest, value: entry});
+                                        setTestID(entry.test_id);
+                                    }}
+                                    style={{
+                                        marginBottom: '5px',
+                                    }}
+                                >
+                                    <Box
+                                        classNames={addClassNames(roundButtonBody)}
+                                        onClick={()=>{
+                                            dispatch({type: actions.reviewTest, value: entry});
+                                            setTestID(entry.test_id);
+                                        }}
+                                    >
+                                        {entry.username}{entry.release_test ? ' (released)' : ''}
+                                    </Box>
+                                    <a
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            queryServer('release', {
+                                                test_list: [
+                                                    entry,
+                                                ],
+                                            }, handleRelease);
+                                        }}
+                                    >
+                                        Release
+                                    </a>
+                                </Flex>
+                            );
+                        })}
+                    </Flex>
+                </Flex>
+                : null
+                }
             </Flex>
         </UserPage>
         : <Redirect to="/review_exam" />

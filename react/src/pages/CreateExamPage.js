@@ -28,7 +28,7 @@ const LeftPanel = () => {
             width="30%"
             overflowY="auto"
             overflowX="hidden"
-            maxHeight="750px"
+            maxHeight="700px"
             flexDirection="column"
         >
             <Box>
@@ -205,7 +205,8 @@ const RightPanel = () => {
                 flexDirection="column"
                 overflowY="auto"
                 overflowX="hidden"
-                maxHeight="750px"
+                maxHeight="700px"
+                width="100%"
             >
                 {filteredQuestionPool.map((question) => {
                     return (
@@ -218,6 +219,7 @@ const RightPanel = () => {
                                 margin: "5px",
                             }}
                             key={question.question_id}
+                            borderRadius="5px"
                         >
                             <Box>
                                 {`${question.function_name}(${question.function_parameters})`}

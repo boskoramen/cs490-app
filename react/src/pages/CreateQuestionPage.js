@@ -513,8 +513,9 @@ const RightPanel = () => {
                 <Flex
                     overflowY="auto"
                     overflowX="hidden"
-                    maxHeight="750px"
+                    maxHeight="650px"
                     flexDirection="column"
+                    width="100%"
                 >
                     {filteredQuestionPool.map((question) => {
                         return (
@@ -527,6 +528,7 @@ const RightPanel = () => {
                                     margin: "5px",
                                 }}
                                 key={question.question_id}
+                                borderRadius="5px"
                             >
                                 <Box>
                                     {`${question.function_name}(${question.function_parameters})`}

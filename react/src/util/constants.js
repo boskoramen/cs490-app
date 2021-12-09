@@ -26,6 +26,7 @@ export const boxProps = [
     "minHeight",
     "minWidth",
     "resize",
+    'borderRadius',
 ];
 
 export const flexProps = [
