@@ -31,9 +31,9 @@ const LeftPanel = () => {
             maxHeight="750px"
             flexDirection="column"
         >
-            <div>
+            <Box>
                 Exam Name:
-            </div>
+            </Box>
             <Input
                 value={examName}
                 onChange={(value) => {
@@ -43,18 +43,30 @@ const LeftPanel = () => {
                     });
                 }}
             />
-            <div>
-                Questions:
-            </div>
-            {questions.map((question) => {
+            <Box>
+                Questions
+            </Box>
+            {questions.map((question, idx) => {
                 return (
                     <Box key={question.formattedName}>
-                        <div>
+                        <Box>
                             Name: {question.formattedName}
-                        </div>
-                        <div>
+                        </Box>
+                        <Box>
                             Value: {question.pointValue}
-                        </div>
+                        </Box>
+                        <Button
+                            onClick={() => {
+                                let newQuestions = questions;
+                                newQuestions.splice(idx, 1);
+                                setLocalState({
+                                    ...localState,
+                                    questions: newQuestions,
+                                });
+                            }}
+                        >
+                            Remove
+                        </Button>
                     </Box>
                 );
             })}
