@@ -342,6 +342,13 @@ const LeftPanel = () => {
                             });
                             return;
                         }
+                        if(!testCases?.length) {
+                            setLocalState({
+                                ...localState,
+                                errorMessage: 'Need test cases to run student code against.'
+                            });
+                            return;
+                        }
                         const userID = cookie.load('userID');
                         const sesID = cookie.load('sesID');
                         const funcparm = funcParams.map((funcParam) => (`${funcParam.type} ${funcParam.name}`)).join(',');
