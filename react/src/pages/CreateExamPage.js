@@ -26,6 +26,9 @@ const LeftPanel = () => {
     return (
         <Flex
             width="30%"
+            overflowY="auto"
+            overflowX="hidden"
+            maxHeight="750px"
             flexDirection="column"
         >
             <div>
@@ -188,7 +191,9 @@ const RightPanel = () => {
             </Flex>
             <Flex
                 flexDirection="column"
-                overflowY="scroll"
+                overflowY="auto"
+                overflowX="hidden"
+                maxHeight="750px"
             >
                 {filteredQuestionPool.map((question) => {
                     return (
@@ -346,6 +351,8 @@ const CreateExamPage = (props) => {
             >
                 <Flex
                     height="100%"
+                    overflowY="hidden"
+                    overflowX="hidden"
                 >
                     <LeftPanel />
                     <RightPanel />
