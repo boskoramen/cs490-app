@@ -110,7 +110,7 @@ const LeftPanel = () => {
                     });
                 }}
                 height='200px'
-                width='200px'
+                width='600px'
             />
             <Box>
                 Topic

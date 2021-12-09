@@ -53,19 +53,16 @@ const StudentPage = (props) => {
                 </Box>
                 <Flex>
                     {exams?.not_taken.map((exam, idx) => (
-                        <div
+                        <Box
                             classNames={addClassNames(roundButton)}
                             key={idx}
+                            onClick={() => {
+                                history.push('/take_exam');
+                                dispatch({type: actions.takeExam, value: exam.exam_id});
+                            }}
                         >
-                            <a
-                                onClick={() => {
-                                    history.push('/take_exam');
-                                    dispatch({type: actions.takeExam, value: exam.exam_id});
-                                }}
-                            >
-                                {exam.name}
-                            </a>
-                        </div>
+                            {exam.name}
+                        </Box>
                     ))}
                 </Flex>
                 <Box>

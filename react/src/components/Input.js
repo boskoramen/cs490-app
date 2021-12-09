@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { boxProps } from "../util/constants.js";
+import { parseProps, addClassNames } from "../util/helpers.js"
 import { Box } from "./Box.js";
 
 export const Input = (props) => {
@@ -38,6 +40,10 @@ export const Input = (props) => {
         },
         onBlur: (e) => {
             setFocused(false);
+        },
+        style: {
+            ...props.style,
+            ...parseProps(props, boxProps),
         },
     }
 

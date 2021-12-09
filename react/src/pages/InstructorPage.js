@@ -84,6 +84,7 @@ const InstructorPage = (props) => {
                 >
                     Create Exam
                 </Box>
+                {exams?.length ?
                 <Flex
                     flexDirection="column"
                     classNames={addClassNames(infoBox)}
@@ -103,18 +104,13 @@ const InstructorPage = (props) => {
                                     dispatch({type: actions.seeTests, value: exam.exam_id});
                                 }}
                             >
-                                <a
-                                    onClick={() => {
-                                        history.push('/review_exam_results');
-                                        dispatch({type: actions.seeTests, value: exam.exam_id});
-                                    }}
-                                >
-                                    {exam.name}
-                                </a>
+                                {exam.name}
                             </Box>
                         ))}
                     </Flex>
                 </Flex>
+                : null
+                }
             </Flex>
         </UserPage>
     );
