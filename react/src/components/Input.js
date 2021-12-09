@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import { boxProps } from "../util/constants.js";
 import { parseProps, addClassNames } from "../util/helpers.js"
 import { Box } from "./Box.js";
+import classNames from "classnames";
 
 export const Input = (props) => {
     const defaultValue = props.defaultValue || '';
     const [ focused, setFocused ] = useState(false);
-
+    const { onChange, onClick, onFocus, onBlur } = props;
     let value = props.value === undefined ? '' : props.value;
     let type = props.type ? props.type : "text";
     if(value === '') {
@@ -24,21 +25,25 @@ export const Input = (props) => {
         value,
         onChange: (e) => {
             const target = e.target.value;
-            const onChange = props.onChange;
             if(onChange) {
                 onChange(target);
             }
         },
         onClick: (e) => {
-            const onClick = props.onClick;
             if(onClick) {
                 onClick();
             }
         },
         onFocus: (e) => {
+            if(onFocus) {
+                onFocus();
+            }
             setFocused(true);
         },
         onBlur: (e) => {
+            if(onBlur) {
+                onBlur();
+            }
             setFocused(false);
         },
         style: {
@@ -51,12 +56,14 @@ export const Input = (props) => {
         type === "textbox" ?
         <textarea
             {...newProps}
+            className={classNames(props.classNames)}
         /> :
         <Box>
             <input
                 {...newProps}
                 type={type}
                 checked={props.checked}
+                className={classNames(props.classNames)}
             />
         </Box>
     );

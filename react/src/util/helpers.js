@@ -88,3 +88,7 @@ export const addClassNames = (classNames, propsClassNames) => {
 export const clamp = (num, min, max) => {
     return Math.min(Math.max(num, min), max);
 }
+
+export const formatNumber = (num) => {
+    return num.toFixed(1).replace(/\.0$/, "");
+}

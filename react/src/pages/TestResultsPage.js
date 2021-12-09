@@ -8,8 +8,11 @@ import { Redirect } from "react-router-dom";
 import MasterContext from "../reducer/context";
 import AceEditor from "react-ace";
 import { Button } from "../components/Button";
-
+import { correctGreen, wrongRed } from "../util/colors";
+import { formatNumber, addClassNames } from "../util/helpers";
 import "ace-builds/src-noconflict/mode-python";
+import styles from "../styles/main.scss";
+const { roundButton, roundButtonBody, infoBox } = styles;
 
 const TestResultsPage = (props) => {
     const { state } = useContext(MasterContext);
@@ -40,153 +43,199 @@ const TestResultsPage = (props) => {
             totalScore += testCase.score;
         }
     }
+
+    let totalPossibleScore = 0;
+    let currentScore = 0;
+    for(let answer of test_answer_data) {
+        totalPossibleScore += answer.point_value;
+    }
+    for(let obj of [
+        ...test_case_data,
+        ...constraint_data,
+    ]) {
+        currentScore += obj.score;
+    }
+
     return (
         !success ?
         <UserPage pageTitle="View Exam Results" {...props}>
-            <Flex flexDirection="column">
-                {test_answer_data.length > 1 &&
-                <Flex>
+            <Flex>
+                <Flex
+                    flexDirection="column"
+                    width="30%"
+                >
+                    {test_answer_data.length > 1 &&
+                    <Flex>
+                        <Button
+                            onClick={() => {
+                                const newIdx = (currentAnswerIdx - 1) >= 0 ? currentAnswerIdx - 1 : test_answer_data.length - 1;
+                                setLocalState({
+                                    ...localState,
+                                    currentAnswerIdx: newIdx,
+                                });
+                            }}
+                        >
+                            Prev
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                const newIdx = (currentAnswerIdx + 1) < test_answer_data.length ? currentAnswerIdx + 1 : 0;
+                                setLocalState({
+                                    ...localState,
+                                    currentAnswerIdx: newIdx,
+                                });
+                            }}
+                        >
+                            Next
+                        </Button>
+                    </Flex>
+                    }
+                    <AceEditor
+                        mode="python"
+                        name="code-editor"
+                        readOnly={true}
+                        value={currentAnswer.answer || ""}
+                        height="200px"
+                    />
+                    <Box>
+                        Review:
+                    </Box>
+                    <Box>
+                        {currentAnswer.review}
+                    </Box>
                     <Button
                         onClick={() => {
-                            const newIdx = (currentAnswerIdx - 1) >= 0 ? currentAnswerIdx - 1 : test_answer_data.length - 1;
                             setLocalState({
                                 ...localState,
-                                currentAnswerIdx: newIdx,
+                                success: true,
                             });
                         }}
                     >
-                        Prev
-                    </Button>
-                    <Button
-                        onClick={() => {
-                            const newIdx = (currentAnswerIdx + 1) < test_answer_data.length ? currentAnswerIdx + 1 : 0;
-                            setLocalState({
-                                ...localState,
-                                currentAnswerIdx: newIdx,
-                            });
-                        }}
-                    >
-                        Next
+                        Finish
                     </Button>
                 </Flex>
-                }
-                <AceEditor
-                    mode="python"
-                    name="code-editor"
-                    readOnly={true}
-                    value={currentAnswer.answer || ""}
-                    height="200px"
-                />
-                <div>
-                    Review:
-                </div>
-                <Box>
-                    {currentAnswer.review}
-                </Box>
                 <Flex
                     flexDirection="column"
                 >
-                    {constraint_data.map((constraint, idx) => {
-                        return (
-                            <Flex
-                                key={constraint.id}
-                                backgroundColor="gray"
-                            >
-                                <Box
-                                >
-                                    Constraint:
-                                </Box>
-                                <Box
-                                    backgroundColor="beige"
-                                >
-                                    {constraint_description[constraint.name]}
-                                </Box>
-                                <Box
-                                    backgroundColor="beige"
-                                >
-                                    {constraint.score}
-                                </Box>
-                            </Flex>
-                        );
-                    })}
-                    {test_case_data.map((testCase, idx) => {
-                        return (
-                            <Flex
-                                key={testCase.id}
-                                backgroundColor="gray"
-                            >
-                                <Flex
-                                    flexDirection="column"
-                                >
-                                    <Box>
-                                        <Box
-                                        >
-                                            Test Case {idx+1}:
-                                        </Box>
-                                        <Flex>
-                                            <Box
-                                                backgroundColor="beige"
-                                            >
-                                                {testCase.score}
-                                            </Box>
-                                        </Flex>
-                                    </Box>
-                                    <Flex>
-                                        <Box>
-                                            Input:
-                                        </Box>
-                                        <Box
-                                            backgroundColor="beige"
-                                        >
-                                            {testCase.input}
-                                        </Box>
-                                    </Flex>
-                                    <Flex>
-                                        <Box>
-                                            Expected Output:
-                                        </Box>
-                                        <Box
-                                            backgroundColor="beige"
-                                        >
-                                            {testCase.expected_output}
-                                        </Box>
-                                    </Flex>
-                                    <Flex>
-                                        <Box>
-                                            Actual Output:
-                                        </Box>
-                                        <Box
-                                            backgroundColor="beige"
-                                        >
-                                            {testCase.output}
-                                        </Box>
-                                    </Flex>
-                                </Flex>
-                            </Flex>
-                        );
-                    })}
-                </Flex>
-                <Box
-                    backgroundColor="purple"
-                >
-                    <Flex>
-                        <Box
-                            backgroundColor="beige"
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th colSpan={2}>Information</th>
+                                <th>Points</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {constraint_data.map((constraint, idx) => {
+                                return (
+                                    <tr
+                                        key={constraint.id}
+                                        style={{
+                                            backgroundColor: constraint.correct ? correctGreen : wrongRed,
+                                        }}
+                                    >
+                                        <td>
+                                            Constraint
+                                        </td>
+                                        <td colSpan={2}>
+                                            {constraint_description[constraint.name]}
+                                        </td>
+                                        <td>
+                                            {constraint.score}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                            {test_case_data.map((testCase, idx) => {
+                                return (
+                                    <tr
+                                        key={testCase.id}
+                                        style={{
+                                            backgroundColor: testCase.correct ? correctGreen : wrongRed,
+                                        }}
+                                    >
+                                        <td>
+                                            Test Case
+                                        </td>
+                                        <td colSpan={2}>
+                                            <Flex>
+                                                <Box>
+                                                    Input:
+                                                </Box>
+                                                <Box
+                                                    backgroundColor="beige"
+                                                >
+                                                    {testCase.input}
+                                                </Box>
+                                            </Flex>
+                                            <Flex>
+                                                <Box>
+                                                    Expected Output:
+                                                </Box>
+                                                <Box
+                                                    backgroundColor="beige"
+                                                >
+                                                    {testCase.expected_output}
+                                                </Box>
+                                            </Flex>
+                                            <Flex>
+                                                <Box>
+                                                    Actual Output:
+                                                </Box>
+                                                <Box
+                                                    backgroundColor="beige"
+                                                >
+                                                    {testCase.output}
+                                                </Box>
+                                            </Flex>
+                                        </td>
+                                        <td>
+                                            {testCase.score}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td/>
+                                <td/>
+                                <td>
+                                    Total
+                                </td>
+                                <td>
+                                    {formatNumber(currentScore)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td/>
+                                <td/>
+                                <td>
+                                    Question Value
+                                </td>
+                                <td>
+                                    {currentAnswer.point_value}
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <Box
+                        classNames={addClassNames(infoBox)}
+                    >
+                        <Flex
+                            flexDirection="column"
                         >
-                            {totalScore}
-                        </Box>
-                    </Flex>
-                </Box>
-                <Button
-                    onClick={() => {
-                        setLocalState({
-                            ...localState,
-                            success: true,
-                        });
-                    }}
-                >
-                    Finish
-                </Button>
+                            <Box>
+                                Total Score
+                            </Box>
+                            <Box
+                                backgroundColor="beige"
+                            >
+                                {formatNumber(totalScore)}/{formatNumber(totalPossibleScore)} ({formatNumber(totalScore/totalPossibleScore*100)}%)
+                            </Box>
+                        </Flex>
+                    </Box>
+                </Flex>
             </Flex>
         </UserPage>
         : <Redirect to="/"/>

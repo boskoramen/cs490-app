@@ -9,3 +9,31 @@ body {
 a:hover {
     text-decoration: underline;
 }
+
+table {
+    background-color: gray;
+    border-radius: 5px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+tr:first-child td:first-child {
+    border-top-left-radius: 5px;
+}
+
+tr:first-child td:last-child {
+    border-top-right-radius: 5px;
+}
+
+tr:last-child td:first-child {
+    border-bottom-left-radius: 5px;
+}
+
+tr:last-child td:last-child {
+    border-bottom-right-radius: 5px;
+}
+
+td {
+    text-align: left;
+    padding: 10px;
+}

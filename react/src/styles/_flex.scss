@@ -5,8 +5,26 @@
     width: 100%;
 }
 
+.flexContainer--vertical {
+    @extend .flexContainer;
+}
+
 .flexContainer > * {
     padding: 5px;
-    margin-left: 0px;
+    margin-right: 0px;
     width: fit-content;
+}
+
+.flexContainer > *:last-child {
+    margin-right: 0px;
+}
+
+.flexContainerVertical > * {
+    padding: 5px;
+    margin-bottom: 0px;
+    width: fit-content;
+}
+
+.flexContainerVertical > *:last-child {
+    margin-bottom: 0px;
 }
