@@ -116,6 +116,7 @@ const TestResultsPage = (props) => {
                 </Flex>
                 <Flex
                     flexDirection="column"
+                    width="70%"
                 >
                     <table>
                         <thead>

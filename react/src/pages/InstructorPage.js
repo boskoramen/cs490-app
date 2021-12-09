@@ -93,9 +93,7 @@ const InstructorPage = (props) => {
                     flexDirection="column"
                     classNames={addClassNames(infoBox)}
                 >
-                    <Box
-                        color="beige"
-                    >
+                    <Box>
                         Exams
                     </Box>
                     <Flex>

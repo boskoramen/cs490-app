@@ -9,7 +9,7 @@ import MasterContext from "../reducer/context";
 import { actions } from "../reducer/constants";
 import styles from "../styles/main.scss";
 
-const { roundButton, roundButtonBody } = styles;
+const { roundButton, roundButtonBody, infoBox } = styles;
 
 const StudentPage = (props) => {
     const { dispatch } = useContext(MasterContext);
@@ -48,51 +48,64 @@ const StudentPage = (props) => {
             <Flex
                 flexDirection="column"
             >
-                <Box>
-                    To Take:
-                </Box>
-                <Flex>
-                    {exams?.not_taken.map((exam, idx) => (
-                        <Box
-                            classNames={addClassNames(roundButton)}
-                            key={idx}
-                            onClick={() => {
-                                history.push('/take_exam');
-                                dispatch({type: actions.takeExam, value: exam.exam_id});
-                            }}
-                        >
+                {exams?.not_taken.length ?
+                <Flex
+                    flexDirection="column"
+                    classNames={addClassNames(infoBox)}
+                >
+                    <Box>
+                        To Take
+                    </Box>
+                    <Flex>
+                        {exams?.not_taken.map((exam, idx) => (
                             <Box
-                                classNames={addClassNames(roundButtonBody)}
+                                classNames={addClassNames(roundButton)}
+                                key={idx}
+                                onClick={() => {
+                                    history.push('/take_exam');
+                                    dispatch({type: actions.takeExam, value: exam.exam_id});
+                                }}
                             >
-                                {exam.name}
+                                <Box
+                                    classNames={addClassNames(roundButtonBody)}
+                                >
+                                    {exam.name}
+                                </Box>
                             </Box>
-                        </Box>
-                    ))}
+                        ))}
+                    </Flex>
                 </Flex>
-                <Box>
-                    Reviewed:
-                </Box>
-                <Flex>
-                    {exams?.taken.map((exam, idx) => (
-                        <div
-                            style={{
-                                border: "2px solid red",
-                                borderRadius: "5px",
-                                padding: "5px"
-                            }}
-                            key={idx}
-                        >
-                            <a
+                : null
+                }
+                {exams?.taken.length ?
+                <Flex
+                    flexDirection="column"
+                    classNames={addClassNames(infoBox)}
+                >
+                    <Box>
+                        Reviewed
+                    </Box>
+                    <Flex>
+                        {exams?.taken.map((exam, idx) => (
+                            <Box
+                                classNames={addClassNames(roundButton)}
+                                key={idx}
                                 onClick={() => {
                                     history.push('/view_exam_results');
                                     dispatch({type: actions.seeResults, value: exam});
                                 }}
                             >
-                                {exam.name}
-                            </a>
-                        </div>
-                    ))}
+                                <Box
+                                    classNames={addClassNames(roundButtonBody)}
+                                >
+                                    {exam.name}
+                                </Box>
+                            </Box>
+                        ))}
+                    </Flex>
                 </Flex>
+                : null
+                }
             </Flex>
         </UserPage>
     );
