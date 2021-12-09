@@ -9,7 +9,7 @@ import MasterContext from "../reducer/context";
 import { actions } from "../reducer/constants";
 import styles from "../styles/main.scss";
 
-const { roundButton } = styles;
+const { roundButton, roundButtonBody } = styles;
 
 const StudentPage = (props) => {
     const { dispatch } = useContext(MasterContext);
@@ -61,7 +61,11 @@ const StudentPage = (props) => {
                                 dispatch({type: actions.takeExam, value: exam.exam_id});
                             }}
                         >
-                            {exam.name}
+                            <Box
+                                classNames={addClassNames(roundButtonBody)}
+                            >
+                                {exam.name}
+                            </Box>
                         </Box>
                     ))}
                 </Flex>

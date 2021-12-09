@@ -11,7 +11,7 @@ import MasterContext from "../reducer/context";
 import { generateHeaderComp } from "../util/helpers.js";
 import styles from "../styles/main.scss";
 
-const { roundButton, codingPracticeTitleButton, infoBox } = styles;
+const { roundButton, roundButtonBody, codingPracticeTitleButton, infoBox } = styles;
 
 const InstructorPage = (props) => {
     const { dispatch } = useContext(MasterContext);
@@ -82,7 +82,11 @@ const InstructorPage = (props) => {
                         });
                     }}
                 >
-                    Create Exam
+                    <Box
+                        classNames={addClassNames(roundButtonBody)}
+                    >
+                        Create Exam
+                    </Box>
                 </Box>
                 {exams?.length ?
                 <Flex
@@ -104,7 +108,11 @@ const InstructorPage = (props) => {
                                     dispatch({type: actions.seeTests, value: exam.exam_id});
                                 }}
                             >
-                                {exam.name}
+                                <Box
+                                    classNames={addClassNames(roundButtonBody)}
+                                >
+                                    {exam.name}
+                                </Box>
                             </Box>
                         ))}
                     </Flex>

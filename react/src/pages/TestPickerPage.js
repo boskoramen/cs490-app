@@ -10,7 +10,7 @@ import MasterContext from "../reducer/context";
 import { actions } from "../reducer/constants";
 import styles from "../styles/main.scss";
 
-const { roundButton } = styles;
+const { roundButton, roundButtonBody } = styles;
 
 const TestPickerPage = (props) => {
     const { state, dispatch } = useContext(MasterContext);
@@ -84,7 +84,11 @@ const TestPickerPage = (props) => {
                             }}
                             key={entry.test_id}
                         >
-                            {entry.username}
+                            <Box
+                                classNames={addClassNames(roundButtonBody)}
+                            >
+                                {entry.username}
+                            </Box>
                         </Button>
                     );
                 })}
@@ -93,34 +97,37 @@ const TestPickerPage = (props) => {
                 </Box>
                 {testPool && testPool.reviewed.map((entry, idx) => {
                     return (
-                        <Box
+                        <Flex
                             classNames={addClassNames(roundButton)}
+                            flexDirection="column"
                             key={entry.test_id}
+                            onClick={()=>{
+                                dispatch({type: actions.reviewTest, value: entry});
+                                setTestID(entry.test_id);
+                            }}
                         >
-                            <Flex
-                                flexDirection="column"
+                            <Box
+                                classNames={addClassNames(roundButtonBody)}
+                                onClick={()=>{
+                                    dispatch({type: actions.reviewTest, value: entry});
+                                    setTestID(entry.test_id);
+                                }}
                             >
-                                <a
-                                    onClick={()=>{
-                                        dispatch({type: actions.reviewTest, value: entry});
-                                        setTestID(entry.test_id);
-                                    }}
-                                >
-                                    {entry.username}{entry.release_test ? ' (released)' : ''}
-                                </a>
-                                <a
-                                    onClick={()=>{
-                                        queryServer('release', {
-                                            test_list: [
-                                                entry,
-                                            ],
-                                        }, handleRelease);
-                                    }}
-                                >
-                                    Release
-                                </a>
-                            </Flex>
-                        </Box>
+                                {entry.username}{entry.release_test ? ' (released)' : ''}
+                            </Box>
+                            <a
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    queryServer('release', {
+                                        test_list: [
+                                            entry,
+                                        ],
+                                    }, handleRelease);
+                                }}
+                            >
+                                Release
+                            </a>
+                        </Flex>
                     );
                 })}
             </Flex>
