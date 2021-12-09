@@ -45,17 +45,30 @@ const TestResultsPage = (props) => {
         <UserPage pageTitle="View Exam Results" {...props}>
             <Flex flexDirection="column">
                 {test_answer_data.length > 1 &&
-                <Button
-                    onClick={() => {
-                        const newIdx = (currentAnswerIdx + 1) < test_answer_data.length ? currentAnswerIdx + 1 : 0;
-                        setLocalState({
-                            ...localState,
-                            currentAnswerIdx: newIdx,
-                        });
-                    }}
-                >
-                    Next
-                </Button>
+                <Flex>
+                    <Button
+                        onClick={() => {
+                            const newIdx = (currentAnswerIdx - 1) >= 0 ? currentAnswerIdx - 1 : test_answer_data.length - 1;
+                            setLocalState({
+                                ...localState,
+                                currentAnswerIdx: newIdx,
+                            });
+                        }}
+                    >
+                        Prev
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            const newIdx = (currentAnswerIdx + 1) < test_answer_data.length ? currentAnswerIdx + 1 : 0;
+                            setLocalState({
+                                ...localState,
+                                currentAnswerIdx: newIdx,
+                            });
+                        }}
+                    >
+                        Next
+                    </Button>
+                </Flex>
                 }
                 <AceEditor
                     mode="python"

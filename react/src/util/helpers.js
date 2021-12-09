@@ -84,3 +84,7 @@ export const addClassNames = (classNames, propsClassNames) => {
     }
     return newClassNames;
 }
+
+export const clamp = (num, min, max) => {
+    return Math.min(Math.max(num, min), max);
+}

@@ -3,6 +3,7 @@
 .page {
     height: 100%;
     overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 .codingPracticeHeader, .codingPracticeBody {
@@ -55,4 +56,6 @@ $practiceTitleMargin: 20px;
 
 .codingPracticeBody {
     height: 750px;
+    overflow-y: auto;
+    overflow-x: hidden;
 }

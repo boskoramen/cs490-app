@@ -70,18 +70,32 @@ const TakeExamPage = (props) => {
             {currentQuestion &&
             <Flex flexDirection="column">
                 {questionPool && questionPool.length > 1 &&
-                <Button
-                    onClick={() => {
-                        const newIdx = (currentQuestionIdx + 1) < questionPool.length ? currentQuestionIdx + 1 : 0;
-                        setLocalState({
-                            ...localState,
-                            currentQuestionIdx: newIdx,
-                            currentQuestion: questionPool[newIdx]
-                        });
-                    }}
-                >
-                    Next
-                </Button>
+                <Flex>
+                    <Button
+                        onClick={() => {
+                            const newIdx = (currentQuestionIdx - 1) >= 0 ? currentQuestionIdx - 1 : questionPool.length - 1;
+                            setLocalState({
+                                ...localState,
+                                currentQuestionIdx: newIdx,
+                                currentQuestion: questionPool[newIdx]
+                            });
+                        }}
+                    >
+                        Prev
+                    </Button>
+                    <Button
+                        onClick={() => {
+                            const newIdx = (currentQuestionIdx + 1) < questionPool.length ? currentQuestionIdx + 1 : 0;
+                            setLocalState({
+                                ...localState,
+                                currentQuestionIdx: newIdx,
+                                currentQuestion: questionPool[newIdx]
+                            });
+                        }}
+                    >
+                        Next
+                    </Button>
+                </Flex>
                 }
                 <div>
                     {currentQuestion.name}
